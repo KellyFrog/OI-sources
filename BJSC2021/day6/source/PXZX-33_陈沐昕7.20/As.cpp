@@ -1,0 +1,50 @@
+Rep(i,1,n)
+		if(a[i].x<=x&&a[i].y<=y){
+			while(top&&a[stk[top]].y<a[i].y)top--;
+			stk[++top]=i;
+		}
+	int now=0;
+	Rep(i,1,n){
+		if(a[i].x>x)break;
+		while(now<top&&a[stk[now+1]].x<=a[i].x)now++;
+		down[i]=a[stk[now+1]].y;
+	}
+	
+	top=0;
+	Rep(i,1,n)
+		if(a[i].x<=x&&a[i].y>=y){
+			while(top&&a[stk[top]].y>a[i].y)top--;
+			stk[++top]=i;	
+		}
+	now=0;
+	Rep(i,1,n){
+		if(a[i].x>x)break;
+		while(now<top&&a[stk[now+1]].x<=a[i].x)now++;
+		up[i]=a[stk[now+1]].y;
+	}
+	
+	top=0;
+	_Rep(i,n,1)
+		if(a[i].x>=x&&a[i].y<=y){
+			while(top&&a[stk[top]].y<a[i].y)top--;
+			stk[++top]=i;
+		}
+	now=0;
+	_Rep(i,n,1){
+		if(a[i].x<x)break;
+		while(now<top&&a[stk[now+1]].x>=a[i].x)now++;
+		down[i]=a[stk[now+1]].y;
+	}
+	
+	top=0;
+	_Rep(i,n,1)
+		if(a[i].x>=x&&a[i].y>=y){
+			while(top&&a[stk[top]].y>a[i].y)top--;
+			stk[++top]=i;	
+		}
+	now=0;
+	_Rep(i,n,1){
+		if(a[i].x<x)break;
+		while(now<top&&a[stk[now+1]].x>=a[i].x)now++;
+		up[i]=a[stk[now+1]].y;
+	} 	
