@@ -1,263 +1,171 @@
-#include <iostream>
-#include <cstdio>
-#include <vector>
-#include <algorithm>
-#include <queue>
-#include <set>
-#include <map>
+// Problem: P3384 【模板】轻重链剖分/树链剖分
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P3384
+// Memory Limit: 125 MB
+// Time Limit: 1000 ms
+// Create Time: 2022-04-14 19:35:42
+// Input/Output: stdin/stdout
+// 
+// Powered by CP Editor (https://cpeditor.org)
+
+#include <bits/stdc++.h>
 
 using namespace std;
 
-#define vc vector
-#define pq priority_queue
-#define grt greater
-#define pb push_back
-#define mp make_pair
-#define rg register
+typedef long long ll;
 #define fi first
 #define se second
-typedef long long ll;
-typedef unsigned long long ull;
-typedef pair<int, int> pii;
-typedef pair<ll, ll> pll;
-typedef vector<int> vi;
-typedef vector<ll> vll;
-typedef grt<int> gi;
-typedef grt<ll> gll;
-typedef grt<pii> gii;
-typedef grt<pll> gpll;
+#define mp make_pair
+#define pb push_back
+#define pf push_front
+#define rep(i, s, t) for (int i = s; i <= t; ++i)
+#define per(i, s, t) for (int i = t; i >= s; --i)
 
-namespace IO {
-	const int SIZE = (1 << 20) + 1;
-	char ibuf[SIZE], *iS, *iT, obuf[SIZE],*oS = obuf, *oT = obuf + SIZE - 1;
-	char _st[55];
-	int _qr = 0;
-#ifdef ONLINE_JUDGE
-	inline char gc() {
-		return (iS == iT ? iT = (iS = ibuf) + fread(ibuf, 1, SIZE, stdin), (iS == iT ? EOF : *iS++) : *iS++);
-	}
+namespace nqio{const unsigned R=4e5,W=4e5;char*a,*b,i[R],o[W],*c=o,*d=o+W,h[40],*p=h,y;bool s;struct q{void r(char&x){x=a==b&&(b=(a=i)+fread(i,1,R,stdin),a==b)?-1:*a++;}void f(){fwrite(o,1,c-o,stdout);c=o;}~q(){f();}void w(char x){*c=x;if(++c==d)f();}q&operator>>(char&x){do r(x);while(x<=32);return*this;}q&operator>>(char*x){do r(*x);while(*x<=32);while(*x>32)r(*++x);*x=0;return*this;}template<typename t>q&operator>>(t&x){for(r(y),s=0;!isdigit(y);r(y))s|=y==45;if(s)for(x=0;isdigit(y);r(y))x=x*10-(y^48);else for(x=0;isdigit(y);r(y))x=x*10+(y^48);return*this;}q&operator<<(char x){w(x);return*this;}q&operator<<(char*x){while(*x)w(*x++);return*this;}q&operator<<(const char*x){while(*x)w(*x++);return*this;}template<typename t>q&operator<<(t x){if(!x)w(48);else if(x<0)for(w(45);x;x/=10)*p++=48|-(x%10);else for(;x;x/=10)*p++=48|x%10;while(p!=h)w(*--p);return*this;}}qio;}using nqio::qio;
+
+#define OK debug("OK!\n")
+#ifndef ONLINE_JUDGE
+namespace debuger{void debug(const char *s) {cerr << s;}template<typename T1,typename... T2>void debug(const char*s, const T1 x, T2...ls) { int p=0; while(*(s + p)!='\0') {if(*(s+p)=='{'&&*(s+p+1)=='}'){cerr << x;debug(s + p + 2, ls...);return;}cerr << *(s + p++);}}}using debuger::debug;
 #else
-#define gc getchar
+#define debug(...) void(0)
 #endif
-	inline void qread() {}
-	template<class T1, class ...T2>
-	inline void qread(T1 &IEE, T2&... ls) {
-		rg T1 __ = 0, ___ = 1;
-		rg char ch;
-		while(!isdigit(ch = gc())) ___ = (ch == '-') ? -___ : ___;
-		do {
-			__ = (__ << 1) + (__ << 3) + (ch ^ 48);
-		} while(isdigit(ch = gc()));
-		__ *= ___;
-		IEE = __;
-		qread(ls...);
-		return ;
-	}
-	template<class T>
-	inline void qreadarr(T beg, T end) {
-		while(beg != end) {
-			qread(*beg);
-			beg++;
-		}
-	}
-	inline void flush() {
-		fwrite(obuf, 1, oS - obuf, stdout);
-		oS = obuf;
-		return ;
-	}
-#ifdef ONLINE_JUDGE
-	inline void putc_(char _x) {
-		*oS++ = _x;
-		if(oS == oT) flush();
-	}
-#else
-#define putc_ putchar
-#endif
-	inline void qwrite() {}
-	template<class T1, class ...T2>
-	inline void qwrite(T1 IEE, T2... ls) {
-		if(!IEE) putc_('0');
-		if(IEE < 0) putc_('-'), IEE = -IEE;
-		while(IEE) _st[++_qr] = IEE % 10 + '0', IEE /= 10;
-		while(_qr) putc_(_st[_qr--]);
-		qwrite(ls...);
-		return ;
-	}
-	inline void putstr_(const char* IEE) {
-		int p = 0;
-		while(IEE[p] != '\0') {
-			putc_(IEE[p++]);
-		}
-	}
-	inline void puts_(const char* IEE) {
-		putstr_(IEE);
-		putc_('\n');
-	}
-	template<class T>
-	inline void qwritearr(T beg, T end, const char * IEE = {" "}, const char * EE = {"\n"}) {
-		while(beg != end) {
-			qwrite(*beg);
-			beg++;
-			putstr_(IEE);
-		}
-		putstr_(EE);
-	}
-	struct Flusher_ {
-		~Flusher_() {
-			flush();
-		}
-	} io_flusher;
-}
-using namespace IO;
 
-#define rep(i, s, t) for(rg int (i) = s; (i) <= t; (i)++)
-#define per(i, s, t) for(rg int (i) = t; (i) >= s; (i)--)
-#define all(x) x.begin(), x.end()
-#define allrev(x) x.rbegin(), x.rend()
+/* template ends here */
 
-/*templates ends here*/
+mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
 const int N = 1e5 + 5;
-ll MOD;
 
-int rt, n, m;
-int head[N], to[N << 1], nxt[N << 1], tot;
-ll wgt[N];
-int siz[N], dfn[N], sgn[N], seg[N], dep[N], son[N], top[N], fat[N];
-int dfncnt, sgncnt;
-ll sum[N << 2], lazy[N << 2];
+int n, q, rt, P;
+vector<int> adj[N];
+int a[N], sgn[N], seg[N], sgncnt, fat[N], dep[N], siz[N], son[N], top[N];
+int sum[N<<2], lazy[N<<2];
 
-void Lazy(int cur, ll x, int l, int r) {
-	lazy[cur] = (lazy[cur] + x) % MOD;
-	sum[cur] = (sum[cur] + (r - l + 1) * x) % MOD;
+inline void setlazy(int o, int x, int l, int r) {
+	sum[o] = (sum[o] + 1ll * x * (r - l + 1)) % P;
+	lazy[o] = (lazy[o] + x) % P;
 }
 
-void PushUp(int cur) {
-	sum[cur] = (sum[cur << 1] + sum[cur << 1 | 1]) % MOD;
-}
-
-void PushDown(int cur, int l, int r) {
-	int mid = l + r >> 1;
-	Lazy(cur << 1, lazy[cur], l, mid);
-	Lazy(cur << 1 | 1, lazy[cur], mid + 1, r);
-	lazy[cur] = 0;
-}
-
-void Build(int cur, int l, int r) {
-	if(l == r) {
-		sum[cur] = seg[l];
-		return;
+inline void pushdown(int o, int l, int r) {
+	if(lazy[o]) {
+		int mid = l + r >> 1;
+		setlazy(o << 1, lazy[o], l, mid);
+		setlazy(o << 1 | 1, lazy[o], mid + 1, r);
+		lazy[o] = 0;
 	}
-	int mid = l + r >> 1;
-	Build(cur << 1, l, mid);
-	Build(cur << 1 | 1, mid + 1, r);
-	PushUp(cur);
 }
 
-void Add(int cur, int ql, int qr, ll x, int l, int r) {
+inline void pushup(int o) {
+	sum[o] = (sum[o << 1] + sum[o << 1 | 1]) % P;
+}
+
+inline void add(int o, int ql, int qr, int x, int l, int r) {
 	if(ql <= l && r <= qr) {
-		Lazy(cur, x, l, r);
+		setlazy(o, x, l, r);
 		return;
 	}
-	PushDown(cur, l, r);
+	pushdown(o, l, r);
 	int mid = l + r >> 1;
-	if(ql <= mid) Add(cur << 1, ql, qr, x, l, mid);
-	if(mid < qr) Add(cur << 1 | 1, ql, qr, x, mid + 1, r);
-	PushUp(cur);
+	if(ql <= mid) add(o << 1, ql, qr, x, l, mid);
+	if(mid < qr) add(o << 1 | 1, ql, qr, x, mid + 1, r);
+	pushup(o);
 }
 
-ll Sum(int cur, int ql, int qr, int l, int r) {
-	if(ql <= l && r <= qr) return sum[cur];
-	PushDown(cur, l, r);
+inline int query(int o, int ql, int qr, int l, int r) {
+	if(ql <= l && r <= qr) return sum[o];
+	pushdown(o, l, r);
 	int mid = l + r >> 1;
-	ll res = 0;
-	if(ql <= mid) res = (res + Sum(cur << 1, ql, qr, l, mid)) % MOD;
-	if(mid < qr) res = (res + Sum(cur << 1 | 1, ql, qr, mid + 1, r)) % MOD;
+	int res = 0;
+	if(ql <= mid) res = (res + query(o << 1, ql, qr, l, mid)) % P;
+	if(mid < qr) res = (res + query(o << 1 | 1, ql, qr, mid + 1, r)) % P;
 	return res;
 }
 
-void AddEdge(int u, int v) {
-	nxt[++tot] = head[u];
-	to[tot] = v;
-	head[u] = tot;
-}
-
-void Dfs1(int u, int fa) {
-	fat[u] = fa;
-	dfn[u] = ++dfncnt;
+inline void dfs1(int u, int fa) {
 	siz[u] = 1;
+	son[u] = 0;
+	fat[u] = fa;
 	dep[u] = dep[fa] + 1;
-	for(int i = head[u]; i; i = nxt[i]) {
-		int v = to[i];
+	for(int v : adj[u]) {
 		if(v != fa) {
-			Dfs1(v, u);
-			siz[u] += siz[v];
+			dfs1(v, u);
 			if(siz[v] > siz[son[u]]) son[u] = v;
+			siz[u] += siz[v];
 		}
 	}
 }
 
-void Dfs2(int u, int fa) {
-	if(u == 0) return;
+inline void dfs2(int u, int fa) {
 	top[u] = u == son[fa] ? top[fa] : u;
-	sgn[u] = ++sgncnt;
-	seg[sgncnt] = wgt[u];
-	Dfs2(son[u], u);
-	for(int i = head[u]; i; i = nxt[i]) {
-		int v = to[i];
-		if(v != fa && v != son[u]) {
-			Dfs2(v, u);
-		}
+	seg[sgn[u] = ++sgncnt] = u;
+	if(son[u]) dfs2(son[u], u);
+	for(int v : adj[u]) {
+		if(v != fa && v != son[u]) dfs2(v, u);
 	}
 }
 
-ll RouteSum(int x, int y) {
-	ll res = 0;
+inline void routeadd(int x, int y, int z) {
 	while(top[x] != top[y]) {
 		if(dep[top[x]] < dep[top[y]]) swap(x, y);
-		res = (res + Sum(1, sgn[top[x]], sgn[x], 1, n)) % MOD;
+		add(1, sgn[top[x]], sgn[x], z, 1, n);
 		x = fat[top[x]];
 	}
 	if(sgn[x] > sgn[y]) swap(x, y);
-	res = (res + Sum(1, sgn[x], sgn[y], 1, n)) % MOD;
+	add(1, sgn[x], sgn[y], z, 1, n);
+}
+
+inline int routequery(int x, int y) {
+	int res = 0;
+	while(top[x] != top[y]) {
+		if(dep[top[x]] < dep[top[y]]) swap(x, y);
+		res = (res + query(1, sgn[top[x]], sgn[x], 1, n)) % P;
+		x = fat[top[x]];
+	}
+	if(sgn[x] > sgn[y]) swap(x, y);
+	res = (res + query(1, sgn[x], sgn[y], 1, n)) % P;
 	return res;
-}
-
-void RouteAdd(int x, int y, ll z) {
-	while(top[x] != top[y]) {
-		if(dep[top[x]] < dep[top[y]]) swap(x, y);
-		Add(1, sgn[top[x]], sgn[x], z, 1, n);
-		x = fat[top[x]];
-	}
-	if(sgn[x] > sgn[y]) swap(x, y);
-	Add(1, sgn[x], sgn[y], z, 1, n);
-}
-
-ll SubtreeSum(int x) {
-	return Sum(1, sgn[x], sgn[x] + siz[x] - 1, 1, n);
-}
-
-void SubtreeAdd(int x, int z) {
-	Add(1, sgn[x], sgn[x] + siz[x] - 1, z, 1, n);
 }
 
 int main() {
-	qread(n, m, rt, MOD);
-	qreadarr(wgt + 1, wgt + 1 + n);
-	rep(i, 1, n - 1) {
+	ios::sync_with_stdio(false);
+	cin.tie(nullptr), cout.tie(nullptr);
+	cout << fixed << setprecision(15); 
+	cerr << fixed << setprecision(15);
+	
+	cin >> n >> q >> rt >> P;
+	rep(i, 1, n) cin >> a[i];
+	rep(i, 2, n) {
 		int u, v;
-		qread(u, v);
-		AddEdge(u, v), AddEdge(v, u);
+		cin >> u >> v;
+		adj[u].pb(v);
+		adj[v].pb(u);
 	}
-	Dfs1(rt, 0), Dfs2(rt, 0);
-	Build(1, 1, n);
-	rep(i, 1, m) {
-		int opt, x, y, z;
-		qread(opt);
-		if(opt == 1) qread(x, y, z), RouteAdd(x, y, z);
-		else if(opt == 2) qread(x, y), printf("%lld\n", RouteSum(x, y));
-		else if(opt == 3) qread(x, y), SubtreeAdd(x, y);
-		else qread(x), printf("%lld\n", SubtreeSum(x));
+
+	dfs1(rt, 0);
+	dfs2(rt, 0);
+
+	rep(i, 1, n) add(1, sgn[i], sgn[i], a[i], 1, n);
+	while(q--) {
+		int op;
+		cin >> op;
+		if(op == 1) {
+			int x, y, z;
+			cin >> x >> y >> z;
+			routeadd(x, y, z);
+		} else if(op == 2) {
+			int x, y;
+			cin >> x >> y;
+			cout << routequery(x, y) << "\n";
+		} else if(op == 3) {
+			int x, z;
+			cin >> x >> z;
+			add(1, sgn[x], sgn[x] + siz[x] - 1, z, 1, n);
+		} else {
+			int x;
+			cin >> x;
+			cout << query(1, sgn[x], sgn[x] + siz[x] - 1, 1, n) << "\n";
+		}
 	}
+
 	return 0;
 }

@@ -3,248 +3,127 @@
 // URL: https://www.luogu.com.cn/problem/P3376
 // Memory Limit: 128 MB
 // Time Limit: 2000 ms
+// Create Time: 2022-04-14 19:01:37
+// Input/Output: stdin/stdout
 // 
 // Powered by CP Editor (https://cpeditor.org)
-
-/*
- * Author: chenkaifeng @BDFZ
- */
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
 typedef long long ll;
-typedef unsigned long long ull;
-typedef double db;
-typedef long double ldb;
-typedef vector<int> vi;
-typedef pair<int, int> pii;
 #define fi first
 #define se second
-
-#if __cplusplus < 201703L
-#define rg register
-#else
-#define rg
-#endif
-
 #define mp make_pair
 #define pb push_back
 #define pf push_front
+#define rep(i, s, t) for (int i = s; i <= t; ++i)
+#define per(i, s, t) for (int i = t; i >= s; --i)
 
-#define rep(i, s, t) for (rg int i = s; i <= t; i++)
-#define per(i, s, t) for (rg int i = t; i >= s; i--)
-#define OK cerr << "OK!\n"
+namespace nqio{const unsigned R=4e5,W=4e5;char*a,*b,i[R],o[W],*c=o,*d=o+W,h[40],*p=h,y;bool s;struct q{void r(char&x){x=a==b&&(b=(a=i)+fread(i,1,R,stdin),a==b)?-1:*a++;}void f(){fwrite(o,1,c-o,stdout);c=o;}~q(){f();}void w(char x){*c=x;if(++c==d)f();}q&operator>>(char&x){do r(x);while(x<=32);return*this;}q&operator>>(char*x){do r(*x);while(*x<=32);while(*x>32)r(*++x);*x=0;return*this;}template<typename t>q&operator>>(t&x){for(r(y),s=0;!isdigit(y);r(y))s|=y==45;if(s)for(x=0;isdigit(y);r(y))x=x*10-(y^48);else for(x=0;isdigit(y);r(y))x=x*10+(y^48);return*this;}q&operator<<(char x){w(x);return*this;}q&operator<<(char*x){while(*x)w(*x++);return*this;}q&operator<<(const char*x){while(*x)w(*x++);return*this;}template<typename t>q&operator<<(t x){if(!x)w(48);else if(x<0)for(w(45);x;x/=10)*p++=48|-(x%10);else for(;x;x/=10)*p++=48|x%10;while(p!=h)w(*--p);return*this;}}qio;}using nqio::qio;
 
-namespace fastio {
-	const int SIZE = (1 << 20) + 1;
-	char ibuf[SIZE], *iS, *iT, obuf[SIZE], *oS = obuf, *oT = obuf + SIZE - 1;
-	char _st[55];
-	int _qr = 0;
-
-	inline char getchar() {
-		return (iS == iT ? iT = (iS = ibuf) + fread(ibuf, 1, SIZE, stdin),
-		        (iS == iT ? EOF : *iS++) : *iS++);
-	}
-	inline void qread() {}
-	template <typename T1, typename... T2>
-	inline void qread(T1 &x, T2 &...ls) {
-		x = 0;
-		rg char ch = ' ';
-		rg int ps = 1;
-		while (!isdigit(ch) && ch != '-') ch = getchar();
-		if (ch == '-') ps = -1, ch = getchar();
-		while (isdigit(ch)) x = x * 10 + ch - '0', ch = getchar();
-		x *= ps;
-		qread(ls...);
-	}
-
-	inline void flush() {
-		fwrite(obuf, 1, oS - obuf, stdout);
-		oS = obuf;
-		return;
-	}
-	inline void putchar(char _x) {
-		*oS++ = _x;
-		if (oS == oT) flush();
-	}
-	template <typename T>
-	inline void qwrite(T x) {
-		if (x < 0) putchar('-'), x = -x;
-		if (x < 10) return putchar('0' + x), void();
-		qwrite(x / 10), putchar('0' + (x % 10));
-	}
-
-	template <typename T>
-	inline void qwrite(T x, char ch) {
-		qwrite(x), putchar(ch);
-	}
-};  // namespace fastio
-
+#define OK debug("OK!\n")
 #ifndef ONLINE_JUDGE
-
-void debug(const char *s) {
-	cerr << s;
-}
-template <typename T1, typename... T2>
-void debug(const char *s, const T1 x, T2... ls) {
-	int p = 0;
-	while (*(s + p) != '\0') {
-		if (*(s + p) == '{' && *(s + p + 1) == '}') {
-			cerr << x;
-			debug(s + p + 2, ls...);
-			return;
-		}
-		cerr << *(s + p++);
-	}
-}
-
+namespace debuger{void debug(const char *s) {cerr << s;}template<typename T1,typename... T2>void debug(const char*s, const T1 x, T2...ls) { int p=0; while(*(s + p)!='\0') {if(*(s+p)=='{'&&*(s+p+1)=='}'){cerr << x;debug(s + p + 2, ls...);return;}cerr << *(s + p++);}}}using debuger::debug;
 #else
 #define debug(...) void(0)
 #endif
 
-const ll mod = 1e9 + 7;
-// const ll mod = 1e9 + 9;
-// const ll mod = 19260817;
-// const ll mod = 998244353;
-// const int mod =2017;
+// const int mod = 1e9 + 7;
+const int mod = 998244353;
 
-template <typename T>
-inline void chkadd(T& x, T y) {
-	x = x + y >= mod ? x + y - mod : x + y;
-}
-template <typename T>
-inline void chkadd(T& x, T y, T z) {
-	x = y + z >= mod ? y + z - mod : y + z;
-}
-template <typename T>
-inline void chkmns(T& x, T y) {
-	x = x - y < 0 ? x - y + mod : x - y;
-}
-template <typename T>
-inline void chkmns(T& x, T y, T z) {
-	x = y - z < 0 ? y - z + mod : y - z;
-}
-template <typename T>
-inline void chkmax(T& x, T y) {
-	x = x < y ? y : x;
-}
-template <typename T>
-inline void chkmax(T& x, T y, T z) {
-	x = y > z ? y : z;
-}
-template <typename T>
-inline void chkmin(T& x, T y) {
-	x = x < y ? x : y;
-}
-template <typename T>
-inline void chkmin(T& x, T y, T z) {
-	x = y < z ? y : z;
-}
-
-ll qpow(ll x, ll p) {
-	rg ll base = x, res = 1;
-	while (p) {
-		if (p & 1) res = (res * base) % mod;
-		base = (base * base) % mod;
+int qpow(int x, ll p) {
+	int res = 1, base = x;
+	while(p) {
+		if(p & 1) res = 1ll * res * base % mod;
+		base = 1ll * base * base % mod;
 		p >>= 1;
 	}
 	return res;
 }
 
+template<typename T> inline void upd(T& x, const T& y) {	x += y;	if(x >= mod) x -= mod; }
+template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; if(x >= mod) x -= mod; }
+
 /* template ends here */
 
-template<const int N, const int M> 
-class Flow {
-	const ll inf = 1e18;
-	int head[N], nxt[M<<1], to[M<<1];
-	ll wgt[M<<1];
-	int tot = 0;
-	int dis[N];
-	int s, t;
-	
-	
-	
-	
-	inline bool bfs() {
-		memset(dis, 0, sizeof dis);
-		static int que[N]; int hea = 1, tail = 0;
-		dis[s] = 1;
-		que[++tail] = s;
-		while(hea <= tail) {
-			int u = que[hea++];
-			for(int e = head[u]; e; e = nxt[e]) {
-				int v = to[e];
-				ll w = wgt[e];
-				if(w != 0 && dis[v] == 0) {
-					dis[v] = dis[u] + 1;
-					que[++tail] = v;
-				}
-			}
-		}
-		return dis[t];
-	}
-	
-	inline ll dfs(int u, ll in) {
-		if(u == t) return in;
-		ll res = 0;
-		for(int e = head[u]; e; e = nxt[e]) {
-			int v = to[e];
-			ll w = wgt[e];
-			if(w && dis[v] == dis[u] + 1) {
-				ll cur = dfs(v, min(in, w));
-				in -= cur;
-				res += cur;
-				wgt[e] -= cur;
-				wgt[e^1] += cur;
-			}
-		}
-		return res ? res : dis[u] = 0, res;
-	}
-	
-	public:
-	
-	Flow() : tot(1), s(-1), t(-1) {}
-	
-	inline void addedge(int u, int v, ll w) {
-		nxt[++tot] = head[u];
-		to[tot] = v;
-		wgt[tot] = w;
-		head[u] = tot;
-	}
-	
-	inline ll solve(int s0, int t0) {
-		s = s0;
-		t = t0;
-		assert(s != t);
-		ll ans = 0;
-		while(bfs()) ans += dfs(s, inf);
-		return ans;
-	}
-};
+mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
-const int N = 2e2 + 5;
+const int N = 205;
 const int M = 5e3 + 5;
 
-Flow<N, M> f;
-
+int cur[N], head[N], nxt[M<<1], to[M<<1], tot = 1;
+ll fl[M<<1];
 int n, m, s, t;
+int que[N], ph, pt, dis[N];
+
+inline void addedge(int u, int v, int w) {
+	nxt[++tot] = head[u];
+	to[tot] = v;
+	fl[tot] = w;
+	head[u] = tot;
+}
+
+inline bool bfs() {
+	ph = 1, pt = 0;
+	memset(dis, 0, sizeof dis);
+	memcpy(cur, head, sizeof cur);
+	que[++pt] = s;
+	dis[s] = 1;
+	while(ph <= pt) {
+		int u = que[ph++];
+		for(int e = head[u]; e; e = nxt[e]) {
+			int v = to[e], f = fl[e];
+			if(f && dis[v] == 0) {
+				dis[v] = dis[u] + 1;
+				que[++pt] = v;
+			}
+		}
+	}
+	return dis[t];
+}
+
+inline ll dfs(int u, ll lim) {
+	if(u == t) return lim;
+	ll res = 0;
+	for(int& e = cur[u]; e; e = nxt[e]) {
+		int v = to[e], f = fl[e];
+		if(f && dis[v] == dis[u] + 1) {
+			ll x = dfs(v, min(lim, 1ll * f));
+			lim -= x;
+			res += x;
+			fl[e] -= x;
+			fl[e^1] += x;
+		}
+		if(!lim) break;
+	}
+	if(lim) dis[u] = -1;
+	return res;
+}
+
+ll dinic() {
+	ll res = 0;
+	while(bfs()) res += dfs(s, LONG_LONG_MAX);
+	return res;
+}
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr), cout.tie(nullptr);
-	
+	cout << fixed << setprecision(15); 
+	cerr << fixed << setprecision(15);
+
 	cin >> n >> m >> s >> t;
 	rep(i, 1, m) {
-		int u, v; ll w;
+		int u, v, w;
 		cin >> u >> v >> w;
-		f.addedge(u, v, w);
-		f.addedge(v, u, 0);
+		addedge(u, v, w);
+		addedge(v, u, 0);
 	}
+
+	cout << dinic() << "\n";
+
 	
-	cout << f.solve(s, t) << "\n";
-	
-	fastio::flush();
 	return 0;
 }

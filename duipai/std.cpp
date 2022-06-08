@@ -1,138 +1,112 @@
-#include<cstdio>
-#include<cstring>
-#include<algorithm>
-#include<queue> 
+// Problem: U220343 minmax
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/U220343
+// Memory Limit: 512 MB
+// Time Limit: 2000 ms
+// Create Time: 2022-06-02 13:49:18
+// Input/Output: stdin/stdout
+// 
+// Powered by CP Editor (https://cpeditor.org)
+
+#include <bits/stdc++.h>
+
 using namespace std;
-const int maxn=200010;
-int n,k,q;
-struct FHQ
-{
-    int rt,cnt,lc[maxn],rc[maxn],siz[maxn],pri[maxn],val[maxn];
-	int sum[maxn],tag[maxn],minu[maxn];
-    void print(int o)
-    {
-        if(!o)return;
-        pushdown(o);
-        print(lc[o]);
-        //printf("%d ",val[o]);
-        print(rc[o]);
-    }
-    void maintain(int o){siz[o]=siz[lc[o]]+siz[rc[o]]+1;}
-    void pushdown(int o)
-    {
-    	if(tag[o])
-    	{
-    		if(lc[o])tag[lc[o]]+=tag[o],sum[lc[o]]+=tag[o];
-			if(rc[o])tag[rc[o]]+=tag[o],sum[rc[o]]+=tag[o];
-			tag[o]=0; 
-		}
-		if(minu[o])
-		{
-			if(lc[o])minu[lc[o]]+=minu[o],val[lc[o]]-=minu[o];
-			if(rc[o])minu[rc[o]]+=minu[o],val[rc[o]]-=minu[o];
-			minu[o]=0;
-		}
+
+typedef long long ll;
+#define fi first
+#define se second
+#define mp make_pair
+#define pb push_back
+#define pf push_front
+#define rep(i, s, t) for (int i = s; i <= t; ++i)
+#define per(i, s, t) for (int i = t; i >= s; --i)
+
+namespace nqio{const unsigned R=4e5,W=4e5;char*a,*b,i[R],o[W],*c=o,*d=o+W,h[40],*p=h,y;bool s;struct q{void r(char&x){x=a==b&&(b=(a=i)+fread(i,1,R,stdin),a==b)?-1:*a++;}void f(){fwrite(o,1,c-o,stdout);c=o;}~q(){f();}void w(char x){*c=x;if(++c==d)f();}q&operator>>(char&x){do r(x);while(x<=32);return*this;}q&operator>>(char*x){do r(*x);while(*x<=32);while(*x>32)r(*++x);*x=0;return*this;}template<typename t>q&operator>>(t&x){for(r(y),s=0;!isdigit(y);r(y))s|=y==45;if(s)for(x=0;isdigit(y);r(y))x=x*10-(y^48);else for(x=0;isdigit(y);r(y))x=x*10+(y^48);return*this;}q&operator<<(char x){w(x);return*this;}q&operator<<(char*x){while(*x)w(*x++);return*this;}q&operator<<(const char*x){while(*x)w(*x++);return*this;}template<typename t>q&operator<<(t x){if(!x)w(48);else if(x<0)for(w(45);x;x/=10)*p++=48|-(x%10);else for(;x;x/=10)*p++=48|x%10;while(p!=h)w(*--p);return*this;}}qio;}using nqio::qio;
+
+#define OK debug("OK!\n")
+#ifndef ONLINE_JUDGE
+namespace debuger{void debug(const char *s) {cerr << s;}template<typename T1,typename... T2>void debug(const char*s, const T1 x, T2...ls) { int p=0; while(*(s + p)!='\0') {if(*(s+p)=='{'&&*(s+p+1)=='}'){cerr << x;debug(s + p + 2, ls...);return;}cerr << *(s + p++);}}}using debuger::debug;
+#else
+#define debug(...) void(0)
+#endif
+
+const int mod = 1e9 + 7;
+// const int mod = 998244353;
+
+int qpow(int x, ll p) {
+	int res = 1, base = x;
+	while(p) {
+		if(p & 1) res = 1ll * res * base % mod;
+		base = 1ll * base * base % mod;
+		p >>= 1;
 	}
-    int merge(int x,int y)
-    {
-        if(x==0||y==0)return x+y;
-        pushdown(x);pushdown(y);
-        maintain(x);maintain(y);
-        if(pri[x]<pri[y])
-        {
-            rc[x]=merge(rc[x],y);
-            maintain(x);return x;
-        }
-        else
-        {
-            lc[y]=merge(x,lc[y]);
-            maintain(y);return y;
-        }
-    }
-    void split_val(int o,int k,int&x,int&y)
-    {
-        if(!o){x=y=0;return;}
-        pushdown(o); 
-        if(val[o]<=k)x=o,split_val(rc[o],k,rc[o],y);
-        else y=o,split_val(lc[o],k,x,lc[o]);
-        maintain(o);
-    }
-    void split_siz(int o,int k,int&x,int&y)
-    {
-        if(!o){x=y=0;return;}
-        pushdown(o);
-        if(siz[lc[o]]>=k)y=o,split_siz(lc[o],k,x,lc[o]);
-        else x=o,split_siz(rc[o],k-siz[lc[o]]-1,rc[o],y);
-        maintain(o);
-    }
-    int newnode(int v)
-    {
-        cnt++;
-        lc[cnt]=rc[cnt]=0;
-        val[cnt]=v;
-        siz[cnt]=1;
-        pri[cnt]=rand();
-        tag[cnt]=sum[cnt]=0;
-        minu[cnt]=0;
-        return cnt;
-    }
-}st;
-struct node
-{
-	int c,q;
-	bool operator<(node x)const{if(q==x.q)return c<x.c;return q>x.q;}
-}s[maxn];
-//int q[maxn],id[maxn],ans[maxn];
-queue<int>Q;
-int main()
-{
-	scanf("%d",&n);
-	for(int i=1;i<=n;i++)scanf("%d%d",&s[i].c,&s[i].q);
-	sort(s+1,s+n+1);
-	scanf("%d",&k);
-	/*
-	for(int i=1;i<=k;i++)scanf("%d",q+i),id[i]=i;
-	sort(id+1,id+k+1);
-	for(int i=1;i<=n;i++)for(int j=1;j<=k;j++)
-	if(q[id[j]]>=s[i].c)q[id[j]]-=s[i].c,ans[id[j]]++;
-	for(int i=1;i<=k;i++)printf("%d ",ans[i]);
-	printf("\n");
-	*/
-	for(int i=1;i<=k;i++)
-	{
-		scanf("%d",&q);
-		int x,y;
-		st.split_val(st.rt,q,x,y);
-		st.rt=st.merge(st.merge(x,st.newnode(q)),y); 
+	return res;
+}
+
+template<typename T> inline void upd(T& x, const T& y) {	x += y;	if(x >= mod) x -= mod; }
+template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; if(x >= mod) x -= mod; }
+
+/* template ends here */
+
+mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
+
+const int N = 105;
+
+int n, m;
+int a[N], b[N], c[N];
+pair<int, int> d[N];
+int p[N];
+
+void solve(int T) {
+	cin >> n >> m;
+	rep(i ,1, n) cin >> a[i];
+	rep(i, 1, n) cin >> b[i];
+	rep(i, 1, m) cin >> d[i].fi >> d[i].se;
+	
+	if(T == 40) {
+		cerr << n << " " << m << "\n";
+		rep(i, 1, n) cerr << a[i] << " \n"[i == n];
+		rep(i, 1, n) cerr << b[i] << " \n"[i == n];
+		rep(i, 1, m) cerr << d[i].fi << " " << d[i].se << "\n";
 	}
-	for(int i=1;i<=n;i++)
-	{
-		int x,y,z;
-		st.split_val(st.rt,s[i].c-1,x,y);
-		st.split_val(y,s[i].c+s[i].c-1,y,z);
-		st.minu[z]+=s[i].c;st.val[z]-=s[i].c;
-		st.tag[z]++;st.sum[z]++;
-		while(!Q.empty())Q.pop();
-		Q.push(y);
-		while(!Q.empty())
-		{
-			int t=Q.front();Q.pop();
-			st.pushdown(t);
-			if(st.lc[t])Q.push(st.lc[t]);
-			if(st.rc[t])Q.push(st.rc[t]);
-			int a,b;
-			st.split_val(x,st.val[t]-s[i].c,a,b);
-			st.lc[t]=st.rc[t]=0;
-			st.val[t]-=s[i].c;
-			st.siz[t]=1;
-			st.tag[t]=0;
-			st.sum[t]++;
-			st.minu[t]=0;
-			x=st.merge(st.merge(a,t),b); 
+	
+	rep(i, 1, m) p[i] = i;
+	do {
+		cerr << "---" << "\n";
+		rep(i, 1, n) c[i] = a[i];
+		rep(i, 1, m) {
+			auto [l, r] = d[p[i]];
+			ll sum1 = 0, sum2 = 0;
+			rep(j, l, r) sum1 += c[j], sum2 += b[j];
+			if(sum1 == sum2) {
+				cerr << "OK!" << " " << l << " " << r << "\n";
+				rep(j, l, r) c[j] = b[j];
+			}
+			// rep(j, 1, n) cerr << c[j] << " \n"[j == n];
 		}
-		st.rt=st.merge(x,z);
-	}
-	st.print(st.rt);
-	for(int i=1;i<=k;i++)printf("%d\n",st.sum[i]);
+		bool ok = 1;
+		rep(i, 1, n) if(c[i] != b[i]) ok = 0;
+		if(ok) {
+			rep(i, 1, m) {
+				auto [l, r] = d[p[i]];
+				// cerr << l << " " << r << "\n";
+			}
+			cout << "YES" << "\n";
+			return;
+		}
+	} while(next_permutation(p + 1, p + m + 1));
+	cout << "NO" << "\n";
+}
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(nullptr), cout.tie(nullptr);
+	cout << fixed << setprecision(15); 
+	cerr << fixed << setprecision(15);
+	
+	int t;
+	cin >> t;
+	rep(T, 1, t) solve(T);
+	
 	return 0;
 }

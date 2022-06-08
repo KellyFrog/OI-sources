@@ -40,18 +40,29 @@ template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; 
 
 mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
+int a[1000];
+
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr), cout.tie(nullptr);
 	cout << fixed << setprecision(15); 
 	cerr << fixed << setprecision(15);
 	
-	int n = 10, q = 100;
-	cout << n << "\n";
-	rep(i, 1, n) {
-		cout << mtrnd() % 10 + 1 << " " << mtrnd() % 10 + 1 << "\n";
+	int t = 50;
+	cout << t << "\n";
+	while(t--) {
+		int n = 5 + mtrnd() % 3, m = mtrnd() % 10 + 1;
+		rep(i, 1, n) a[i] = mtrnd() % 10 + 1;
+		cout << n << " " << m << "\n";
+		rep(i, 1, n) cout << a[i] << " \n"[i == n];
+		shuffle(a + 1, a + n + 1, mtrnd);
+		rep(i, 1, n) cout << a[i] << " \n"[i == n];
+		rep(i, 1, m) {
+			int l = mtrnd() % n + 1, r = mtrnd() % n + 1;
+			if(l > r) swap(l, r);
+			cout << l << " " << r << "\n";
+		}
 	}
-	cout << q << "\n";
-	rep(i, 1, q) cout << mtrnd() % 200 + 1 << " \n"[i == q];
+	
 	return 0;
 }

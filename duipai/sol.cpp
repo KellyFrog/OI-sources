@@ -1,10 +1,10 @@
-// Problem: CF702F T-Shirts
-// Contest: Luogu
-// URL: https://www.luogu.com.cn/problem/CF702F
-// Memory Limit: 1000 MB
-// Time Limit: 4000 ms
-// Create Time: 2022-03-23 16:45:45
-// Author: Chen Kaifeng
+// Problem: Sanae and Giant Robot
+// Contest: Codeforces
+// URL: https://m1.codeforces.com/contest/1687/problem/C
+// Memory Limit: 256 MB
+// Time Limit: 1000 ms
+// Create Time: 2022-06-03 23:13:57
+// Input/Output: stdin/stdout
 // 
 // Powered by CP Editor (https://cpeditor.org)
 
@@ -30,133 +30,101 @@ namespace debuger{void debug(const char *s) {cerr << s;}template<typename T1,typ
 #define debug(...) void(0)
 #endif
 
-const int mod = 1e9 + 7;
-// const int mod = 998244353;
+// const int mod = 1e9 + 7;
+const int mod = 998244353;
 
 int qpow(int x, ll p) {
-    int res = 1, base = x;
-    while(p) {
-	if(p & 1) res = 1ll * res * base % mod;
-	base = 1ll * base * base % mod;
-	p >>= 1;
-    }
-    return res;
+	int res = 1, base = x;
+	while(p) {
+		if(p & 1) res = 1ll * res * base % mod;
+		base = 1ll * base * base % mod;
+		p >>= 1;
+	}
+	return res;
 }
 
-template<typename T> inline void upd(T& x, const T& y) { x += y; if(x >= mod) x -= mod; }
-template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; if(x >= mod) x -= mod;}
+template<typename T> inline void upd(T& x, const T& y) {	x += y;	if(x >= mod) x -= mod; }
+template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; if(x >= mod) x -= mod; }
 
 /* template ends here */
 
-mt19937 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
+mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
 const int N = 2e5 + 5;
 
-int ls[N], rs[N], val1[N], val2[N], lazy1[N], lazy2[N], id[N], tt;
-unsigned pri[N];
-int rt;
-int n;
-pair<int, int> a[N];
-int k, b[N];
-int ans[N];
+int n, m;
+int a[N], b[N];
+int mxr[N], mil[N];
+ll s1[N], s2[N];
+pair<int, int> c[N];
+tuple<int, int, int> cur[N];
+vector<int> adj[N];
 
-inline void setlazy1(int o, int t) {
-	if(o == 0) return;
-	val1[o] += t;
-	lazy1[o] += t;
-}
-
-inline void setlazy2(int o, int x) {
-	if(o == 0) return;
-	val2[o] += x;
-	lazy2[o] += x;
-}
-
-inline void pushdown(int o) {
-	if(lazy1[o]) {
-		setlazy1(ls[o], lazy1[o]);
-		setlazy1(rs[o], lazy1[o]);
-		lazy1[o] = 0;
+void solve(int T) {
+	cin >> n >> m;
+	rep(i, 1, n) cin >> a[i];
+	rep(i, 1, n) cin >> b[i];
+	rep(i, 1, n) {
+		s1[i] = s1[i-1] + a[i];
+		s2[i] = s2[i-1] + b[i];
 	}
-	if(lazy2[o]) {
-		setlazy2(ls[o], lazy2[o]);
-		setlazy2(rs[o], lazy2[o]);
-		lazy2[o] = 0;
+	rep(i, 1, n+1) mxr[i] = 0, mil[i] = n+1;
+	rep(i, 1, n) adj[i].clear();
+	rep(i, 1, m) {
+		cin >> c[i].fi >> c[i].se;
+		mxr[c[i].fi] = max(mxr[c[i].fi], c[i].se);
+		mil[c[i].se] = min(mil[c[i].se], c[i].fi);
 	}
-}
-
-inline int newnode(int x, int p) {
-	int o = ++tt;
-	pri[o] = mtrnd();
-	ls[o] = rs[o] = 0;
-	val2[o] = x;
-	val1[o] = lazy1[o] = lazy2[o] = 0;
-	id[o] = p;
-	return o;
-}
-
-inline void merge(int& o, int o1, int o2) {
-	if(o1 == 0 || o2 == 0) {
-		o = o1 + o2;
+	rep(i, 1, m) adj[c[i].fi].pb(i), adj[c[i].se].pb(i);
+	rep(i, 1, n) mxr[i] = max(mxr[i], mxr[i-1]);
+	per(i, 1, n-1) mil[i] = min(mil[i], mil[i+1]);
+	set<tuple<int, int, int>> s;
+	set<int> neq;
+	rep(i, 1, n) neq.insert(i);
+	rep(i, 1, m) cur[i] = {0, 0, 0};
+	
+	auto update = [&](int i) {
+		auto [l, r] = c[i];
+		// rep(i, 1, n) cerr << a[i] << " \n"[i == n];
+		// rep(i, 1, n) cerr << b[i] << " \n"[i == n];
+		s.erase(cur[i]);
+		if(s1[r] - s1[l-1] == s2[r] - s2[l-1]) {
+			if(mxr[l] == r && mil[r] >= l) {
+				cur[i] = {-1, l, i};
+			} else {
+				cur[i] = {0, l, i};
+			}
+		} else {
+			cur[i] = {1, l, i};
+		}
+		s.insert(cur[i]);
+	};
+	
+	rep(i, 1, m) {
+		update(i);
+	}
+	while(!s.empty()) {
+		auto [tp, lll, id] = *s.begin();
+		s.erase(s.begin());
+		if(tp == 1) break;
+		auto [l, r] = c[id];
+		cerr << l << " " << r << "\n";
+		for(auto it = neq.lower_bound(l); it != neq.end() && *it <= r; ++it) {
+			int p = *it;
+			a[p] = b[p];
+			s1[p] = s1[p-1] + a[p];
+		}
+		for(auto it = neq.lower_bound(l); it != neq.end() && *it <= r; ++it) {
+			int p = *it;
+			for(int o : adj[p]) update(o);
+		}
+		for(auto it = neq.lower_bound(l); it != neq.end() && *it <= r; it = neq.erase(it));
+	}
+	rep(i, 1, n) if(a[i] != b[i]) {
+		cout << "NO" << "\n";
 		return;
 	}
-	pushdown(o1);
-	pushdown(o2);
-	if(pri[o1] > pri[o2]) {
-		o = o1;
-		merge(rs[o], rs[o1], o2);
-	} else {
-		o = o2;
-		merge(ls[o], o1, ls[o2]);
-	}
-}
-
-inline void split(int& o1, int& o2, int o, int k) {
-	if(o == 0) {
-		o1 = o2 = 0;
-		return;
-	}
-	pushdown(o);
-	if(val2[o] > k) {
-		o2 = o;
-		split(o1, ls[o2], ls[o], k);
-	} else {
-		o1 = o;
-		split(rs[o1], o2, rs[o], k);
-	}
-}
-
-inline void insert(int o) {
-	int x = val2[o];
-	int a, b;
-	split(a, b, rt, x);
-	merge(a, a, o);
-	merge(rt, a, b);
-}
-
-inline void dfs1(int o) {
-	if(o == 0) return;
-	pushdown(o);
-	dfs1(ls[o]);
-	dfs1(rs[o]);
-	ls[o] = rs[o] = 0;
-	insert(o);
-}
-
-inline void dfs2(int o) {
-	if(o == 0) return;
-	pushdown(o);
-	ans[id[o]] = val1[o];
-	dfs2(ls[o]);
-	dfs2(rs[o]);
-}
-
-inline void dfs3(int o) {
-	if(o == 0) return;
-	pushdown(o);
-	dfs3(ls[o]);
-	debug("o = {}, ls = {}, rs = {}, val1 = {}, val2 = {}\n", o, ls[o], rs[o], val1[o], val2[o]);
-	dfs3(rs[o]);
+	cout << "YES" << "\n";
 }
 
 int main() {
@@ -164,35 +132,10 @@ int main() {
 	cin.tie(nullptr), cout.tie(nullptr);
 	cout << fixed << setprecision(15); 
 	cerr << fixed << setprecision(15);
-
-	cin >> n;
-	rep(i, 1, n) cin >> a[i].se >> a[i].fi;
-	sort(a + 1, a + n + 1, [&](const pair<int, int>& x, const pair<int, int>& y) { return x.fi == y.fi ? x.se < y.se : x.fi > y.fi; });
 	
-	cin >> k;
-	rep(i, 1, k) {
-		cin >> b[i];
-		insert(newnode(b[i], i));
-	}
-
-	rep(i, 1, n) {
-		int a, b, c;
-		split(a, c, rt, ::a[i].se-1);
-		split(b, c, c, 2*::a[i].se - 1);
-
-		setlazy1(b, 1);
-		setlazy1(c, 1);
-		setlazy2(b, -::a[i].se);
-		setlazy2(c, -::a[i].se);
-
-		rt = a;
-		dfs1(b);
-		merge(rt, rt, c);
-	}
-
-	dfs2(rt);
-
-	rep(i, 1, k) cout << ans[i] << " \n"[i == k];
-
+	int t;
+	cin >> t;
+	rep(T, 1, t) solve(T);
+	
 	return 0;
 }

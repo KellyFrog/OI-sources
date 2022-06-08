@@ -55,19 +55,52 @@ const int M = 2e5 + 5;
 const int inf = 0x3f3f3f3f;
 
 int n, m;
-vector<pair<int, int>> adj[N], radj[N];
-int ans[M];
-int f[N][2][N];
-int que[N], ph, pt;
+bitset<N> g1[N], g2[N];
+bitset<N> vis1[N], vis2[N], v1[N], v2[N];
+int eu[M], ev[M];
+bitset<N> pre[N];
+int cnt = 0;
+ll ans[N];
 
-inline void bfs(int s, vector<pair<int, int>> adj[], int f[]) {
-	ph = 1, pt = 0;
-	f[s] = 0;
-	que[++pt] = s;
-	while(ph <= pt) {
-		int u = que[ph++];
-		for(auto [v, id] : adj[u]) {
-			f[v] = max(f[v], min(f[u], id));
+void solve1(int id, int s) {
+	debug("solve1 = {} {}\n", id, s);
+	queue<int> q;
+	vis1[id][s] = 1;
+	v1[s][id] = 1;
+
+	if(vis2[id][s] && id < s) ++cnt;
+
+	q.push(s);
+	while(!q.empty()) {
+		int u = q.front(); q.pop();
+		debug("visited {}\n", u);
+		bitset<N> nxt = g1[u] & (pre[n] ^ vis1[id]);
+		for(int v = nxt._Find_first(); v != N; v = nxt._Find_next(v)) {
+			vis1[id][v] = 1;
+			v1[v][id] = 1;
+			if(vis2[id][v] && id < v) ++cnt;
+			q.push(v);
+		}
+	}
+}
+
+void solve2(int id, int s) {
+	debug("solve2 = {} {}, cnt = {}\n", id, s, cnt);
+	queue<int> q;
+	vis2[id][s] = 1;
+	v2[s][id] = 1;
+
+	if(vis1[id][s] && id < s) ++cnt;
+
+	q.push(s);
+	while(!q.empty()) {
+		int u = q.front(); q.pop();
+		bitset<N> nxt = g2[u] & (pre[n] ^ vis2[id]);
+		for(int v = nxt._Find_first();  v != N; v = nxt._Find_next(v)) {
+			vis2[id][v] = 1;
+			v2[v][id] = 1;
+			q.push(v);
+			if(vis1[id][v] && id < v) ++cnt;
 		}
 	}
 }
@@ -79,14 +112,44 @@ int main() {
 	cerr << fixed << setprecision(15);
 	
 	cin >> n >> m;
+
+	rep(i, 1, n) pre[i] = pre[i-1], pre[i][i] = 1;
+
 	rep(i, 1, m) {
-		int u, v;
-		cin >> u >> v;
-		adj[u].pb(mp(v, i));
-		radj[v].pb(mp(u, i));
+		cin >> eu[i] >> ev[i];
 	}
-	
-	
+
+	rep(i, 1, n) v1[i][i] = v2[i][i] = vis1[i][i] = vis2[i][i] = 1, ++ans[m+1];
+
+	per(i, 1, m) {
+		int u = eu[i], v = ev[i];
+
+		if(u < v) g1[u][v] = 1;
+		if(v > u) g2[v][u] = 1;
+
+		debug("edge = {} {}\n", u, v);
+		cnt = 0;
+		bitset<N> o = v1[u] & (pre[n] ^ v1[v]);
+		for(int x = o._Find_first(); x != N; x = o._Find_next(x)) {
+			solve1(x, v);
+		}
+
+		o = v2[v] & (pre[n] ^ v2[u]);
+		for(int x = o._Find_first(); x != N; x = o._Find_next(x)) {
+			solve2(x, u);
+		}
+
+		debug("get cnt = {}\n", cnt);
+		ans[i] = ans[i + 1] + cnt;
+
+		// rep(j, 1, n) rep(k, 1, n) cerr << vis1[j][k] << " \n"[k == n];
+		// cerr << "\n";
+		
+		// rep(j, 1, n) rep(k, 1, n) cerr << vis1[j][k] << " \n"[k == n];
+		// cerr << "\n";
+	}
+
+	rep(i, 1, m + 1) cout << ans[i] << " \n"[i == m + 1];
 	
 	return 0;
 }

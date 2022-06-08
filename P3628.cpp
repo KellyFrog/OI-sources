@@ -54,13 +54,39 @@ std::mt19937 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
 const int N = 1e6 + 5;
 
+int n, A, B, C;
+ll a[N], s[N];
 ll f[N];
+int que[N], ph=1, pt=0;
+
+inline long double slope(int j, int k) { //(xj - xk) / (yj - yk) > si
+	ll xj = A * s[j] * s[j] - B * s[j] + f[j];
+	ll xk = A * s[k] * s[k] - B * s[k] + f[k];
+	ll yj = 2 * A * s[j];
+	ll yk = 2 * A * s[k];
+	return (long double)(xk - xj) / (yk - yj);
+}
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr), cout.tie(nullptr);
 	cout << fixed << setprecision(15); 
 	cerr << fixed << setprecision(15);
+	
+	cin >> n >> A >> B >> C;
+	rep(i, 1, n) cin >> a[i], s[i] = s[i-1] + a[i];
+	
+	f[0] = 0;
+	que[++pt] = 0;
+	rep(i, 1, n) {
+		while(ph < pt && slope(que[ph], que[ph + 1]) < s[i]) ++ph;
+		int j = que[ph];
+		f[i] = A * (s[i] - s[j]) * (s[i] - s[j]) + B * (s[i] - s[j]) + C + f[j];
+		while(ph < pt && slope(que[pt - 1], que[pt]) > slope(que[pt], i)) --pt;
+		que[++pt] = i;
+	}
+	
+	cout << f[n] << "\n";
 	
 	return 0;
 }

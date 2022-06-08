@@ -48,13 +48,13 @@ template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; 
 
 /* template ends here */
 
-// mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
-mt19937_64 mtrnd(0);
+mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
+// mt19937_64 mtrnd(0);
 
 const int N = 3e5 + 5;
 const int M = N * 25;
 
-int ls[M], rs[M], siz[M], sum[M], val[M], lazy1[M], lazy2[M], rev[N], tt, rt;
+int ls[M], rs[M], siz[M], sum[M], val[M], lazy1[M], lazy2[M], rev[M], tt, rt;
 int n, q, a[N];
 
 inline int newnode(int o) {
@@ -139,7 +139,7 @@ inline void split(int& o1, int& o2, int o3, int k) {
 
 inline void merge(int& o, int o1, int o2) {
 	if(o1 == 0 || o2 == 0) {
-		o = newnode(o1 + o2);
+		o = o1 + o2 ? newnode(o1 + o2)  : 0;
 		return;
 	}
 	pushdown(o1);
@@ -158,7 +158,6 @@ inline void merge(int& o, int o1, int o2) {
 
 inline void splitrange(int& a, int& b, int& c, int l, int r, int rt = ::rt) {
 	split(a, c, rt, r);
-	assert(siz[a] == r);
 	split(a, b, a, l-1);
 }
 
@@ -187,11 +186,11 @@ inline void dfs(int o) {
 }
 
 inline void dfs1(int o) {
-	if(!o) return;
-	pushdown(o);
-	dfs1(ls[o]);
-	debug("o = {}, ls = {}, rs = {}, val = {}\n", o, ls[o], rs[o], val[o]);
-	dfs1(rs[o]);
+	// if(!o) return;
+	// pushdown(o);
+	// dfs1(ls[o]);
+	// debug("o = {}, ls = {}, rs = {}, val = {}, id = {}\n", o, ls[o], rs[o], val[o], id[o]);
+	// dfs1(rs[o]);
 }
 
 int main() {
@@ -204,6 +203,7 @@ int main() {
 	
 	cin >> n >> q;
 	rep(i, 1, n) cin >> a[i];
+	
 	
 	build(rt, 1, n);
 
@@ -227,6 +227,8 @@ int main() {
 			cout << (last = sum[b]) << "\n";
 			rt = 0;
 			mergerange(a, b, c, rt);
+
+			debug("rt\n"); dfs1(rt);
 		} else if(op == 2) {
 			int l, r, x;
 			cin >> l >> r >> x;
@@ -307,7 +309,7 @@ int main() {
 			rt = 0;
 			mergerange(a, b, c, rt);
 		}
-		assert(siz[rt] == n);
+		// assert(siz[rt] == n);
 	}
 
 	dfs(rt);
