@@ -48,20 +48,12 @@ int main() {
 	cout << fixed << setprecision(15); 
 	cerr << fixed << setprecision(15);
 	
-	int t = 50;
-	cout << t << "\n";
-	while(t--) {
-		int n = 5 + mtrnd() % 3, m = mtrnd() % 10 + 1;
-		rep(i, 1, n) a[i] = mtrnd() % 10 + 1;
-		cout << n << " " << m << "\n";
-		rep(i, 1, n) cout << a[i] << " \n"[i == n];
-		shuffle(a + 1, a + n + 1, mtrnd);
-		rep(i, 1, n) cout << a[i] << " \n"[i == n];
-		rep(i, 1, m) {
-			int l = mtrnd() % n + 1, r = mtrnd() % n + 1;
-			if(l > r) swap(l, r);
-			cout << l << " " << r << "\n";
-		}
+	int n = 10;
+	cout << n << "\n";
+	rep(i, 1, n) {
+		int a = mtrnd() % 100000 + 1, b = mtrnd() % 100000 + 1;
+		if(a > b) swap(a, b);
+		cout << a << " " << b << "\n";
 	}
 	
 	return 0;

@@ -60,7 +60,7 @@ int main() {
 		system("gen.exe > 01.in");
 		system("std.exe < 01.in > 01.ans");
 		system("sol.exe < 01.in > 01.out");
-		if(system("checker-wyesno.exe 01.in 01.out 01.ans")) return 1;
+		if(system("checker-ncmp.exe 01.in 01.out 01.ans")) return 1;
 	}
 	
 	return 0;

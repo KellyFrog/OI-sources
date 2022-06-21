@@ -51,8 +51,9 @@ template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; 
 
 mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
-const int N = 1e6 + 5;
-const ll B = (1ll << 60) - 1;
+const int N = 1e6 + 101;
+const int S = 60;
+const ll B = (1ll << S) - 1;
 const int inf = 0x3f3f3f3f;
 
 int n, q, t1, t2, t3;
@@ -61,8 +62,8 @@ int pos0[N<<2], pos1[N<<2];
 
 inline void setlazy(int o, int x, int l, int r) {
 	val[o] = x;
-	pos0[o] = x == 0 ? inf : l;
-	pos1[o] = x == B ? inf : l;
+	pos0[o] = x == 0 ? n+1 : l;
+	pos1[o] = x == B ? n+1 : l;
 }
 
 inline void pushdown(int o, int l, int r) {
@@ -107,12 +108,21 @@ inline bool add(int o, int p, ll x, int l, int r) {
 }
 
 inline void modify(int o, int ql, int qr, ll x, int l, int r) {
+	if(ql > qr) return;
 	if(ql <= l && r <= qr) return setlazy(o, x, l, r), void();
 	pushdown(o, l, r);
 	int mid = l + r >> 1;
 	if(ql <= mid) modify(o << 1, ql, qr, x, l, mid);
 	if(mid < qr) modify(o << 1 | 1, ql, qr, x, mid + 1, r);
 	pushup(o);
+}
+
+inline ll getnum(int o, int p, int l, int r) {
+	if(l == r) return val[o];
+	pushdown(o, l, r);
+	int mid = l + r >> 1;
+	if(p <= mid) return getnum(o << 1, p, l, mid);
+	else return getnum(o << 1 | 1, p, mid + 1, r);
 }
 
 int main() {
@@ -122,14 +132,45 @@ int main() {
 	cerr << fixed << setprecision(15);
 
 	cin >> q >> t1 >> t2 >> t3;
-	n = 1e6;
+	n = 1e6 + 5;
 	setlazy(1, 0, 0, n);
 
 	while(q--) {
 		int op; cin >> op;
 		if(op == 1) {
 			int x, k; cin >> x >> k;
-
+			if(x < 0) {
+				int x0 = -x;
+				int a = k / S, b = k / S + 1;
+				int p = b * S;
+				ll lw = x0 & ((1 << p-k) - 1);
+				ll hi = (x0 ^ lw) >> p-k-1;
+				if(add(1, a, -(lw << (k % S)), 0, n)) {
+					++hi;
+				}
+				if(add(1, b, -hi, 0, n)) {
+					int pos = query(1, b+1, n, 1, 0, n);
+					modify(1, b+1, pos-1, B, 0, n);
+					assert(!add(1, pos, -1, 0, n));
+				}
+			} else if(x > 0) {
+				int a = k / S, b = k / S + 1;
+				int p = b * S;
+				ll lw = x & ((1 << p-k) - 1);
+				ll hi = (x ^ lw) >> p-k-1;
+				if(add(1, a, lw << (k % S), 0, n)) {
+					++hi;
+				}
+				if(add(1, b, hi, 0, n)) {
+					int pos = query(1, b+1, n, 0, 0, n);
+					modify(1, b+1, pos-1, 0, 0, n);
+					assert(!add(1, pos, 1, 0, n));
+				}
+			}
+		} else {
+			int k; cin >> k;
+			ll o = getnum(1, k / S, 0, n);
+			cout << (o >> (k % S) & 1) << "\n";
 		}
 	}
 
