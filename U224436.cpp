@@ -33,7 +33,7 @@ int siz[N], rt, cnt1[N], cnt2[N];
 bool vis[N];
 ll ans;
 map<ull, int> cnt;
-ull pre[N], qry[N], sum;
+ull pre[N], qry[N];
 
 inline void dfssiz(int u, int fa) {
 	siz[u] = 1;
@@ -57,7 +57,6 @@ inline void dfscalc(int u, int fa, int c) {
 	// cerr << "get " << u << " " << fa << " " << c << " " << pre[u] << " " << qry[u] << "\n";
 	++cnt2[c];
 	ans += cnt[qry[u]];
-	cerr << "u = " << u << ", get = " << cnt[qry[u]] << "\n";
 	for(auto [v, c] : adj[u]) {
 		if(v != fa && !vis[v]) dfscalc(v, u, c);
 	}
@@ -81,7 +80,7 @@ inline void solve(int u) {
 	dfsrt(u, 0, siz[u]);
 	assert(rt != -1);
 	vis[rt] = 1;
-	cerr << "solve = " << rt << "\n";
+	// cerr << "solve = " << rt << "\n";
 	cnt.clear();
 	++cnt[pre[0]];
 	for(auto [v, c] : adj[rt]) {
@@ -91,7 +90,7 @@ inline void solve(int u) {
 		}
 	}
 	ans += cnt[qry[0]];
-	cerr << "-------- get ans = " << ans << " ----------" << "\n";
+	// cerr << "-------- get ans = " << ans << " ----------" << "\n";
 	for(auto [v, c] : adj[rt]) {
 		if(!vis[v]) solve(v);
 	}
@@ -105,7 +104,7 @@ void solve() {
 	rep(i, 2, n) {
 		int u, v, c; cin >> u >> v >> c;
 		adj[u].emplace_back(v, c);
-		adj[v].emplace_back(u, c);
+		adj[u].emplace_back(u, v);
 		++cnt1[c];
 	}
 	rep(i, 1, m) {
@@ -114,7 +113,6 @@ void solve() {
 		val[i].resize(k+1);
 		for(auto& x : val[i]) x = mtrnd();
 	}
-	pre[0] = qry[0] = 0;
 	rep(i, 1, m) if(val[i].size() >= k) pre[0] ^= val[i][0], qry[0] ^= val[i][0];
 
 
@@ -133,5 +131,6 @@ int main() {
 	cin >> t;
 	while(t--) solve();
 
+	
 	return 0;
 }
