@@ -1,0 +1,4 @@
+*.exe
+testdata/
+.vscode/
+downloads

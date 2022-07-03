@@ -50,14 +50,37 @@ template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; 
 
 mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
-const int N = 1e8 + 5;
+const int N = 1e6 + 5;
 const int M = 2e3 + 5;
 
 int n, m, k;
-int g[M][M], pre[M];
-short mu[N];
+int mu[N], pre[N];
 bool vis[N];
-int prm[N/9], prmp;
+int g[M][M], cnt[M];
+map<pair<int, int>, ll> f;
+vector<int> fac;
+
+ll calc(int n, int k) {
+	if(n == 0) return 0;
+	if(k == 1 && n <= (int)1e6) return pre[n];
+	if(f.count(mp(n, k))) return f[mp(n, k)];
+	ll ans = 0;
+	if(k == 1) {
+		ans = 1;
+		for(int l = 2, r; l <= n; l = r + 1) {
+			r = n / (n / l);
+			ans -= 1ll * (r - l + 1) * calc(n/l, k);
+		}
+		
+	} else {
+		for(int d : fac) {
+			if(mu[d] != 0 && k % d == 0) {
+				ans += calc(n/d, d);
+			}
+		}
+	}
+	return f[mp(n, k)] = ans;
+}
 
 int main() {
 	ios::sync_with_stdio(false);
@@ -65,35 +88,37 @@ int main() {
 	cout << fixed << setprecision(15); 
 	cerr << fixed << setprecision(15);
 
-	cin >> n >> m >> k;
+
 	mu[1] = 1;
-	rep(i, 2, n) {
+	rep(i, 2, (int)1e6) {
 		if(!vis[i]) {
 			mu[i] = -1;
-			prm[++prmp] = i;
-			
-		}
-		rep(j, 1, prmp) {
-			if(i * prm[j] > n) break;
-			vis[i * prm[j]] = 1;
-			if(i % prm[j] == 0) {
-				break;
+			for(int t = 2; i*t <= (int)1e6; ++t) {
+				if(t % i == 0) mu[i*t] = 0;
+				else mu[i*t] = -mu[t];
+				vis[i*t] = 1;
 			}
-			mu[i * prm[j]] = -mu[i];
 		}
 	}
+	rep(i, 1, (int)1e6) pre[i] = pre[i-1] + mu[i];
+
+
+	cin >> n >> m >> k;
 
 	rep(i, 0, k) g[i][0] = g[0][i] = i;
 	rep(i, 1, k) rep(j, 1, k) g[i][j] = g[j%i][i];
-	rep(i, 1, k) pre[i] = pre[i-1] + (g[i][k] == 1);
+	rep(i, 1, k) cnt[i] = cnt[i-1] + (g[k][i] == 1);
+	
+	rep(i, 1, k) if(k % i == 0) fac.pb(i);
 
 	ll ans = 0;
-	rep(d, 1, n) {
-		if(g[d%k][k] != 1) continue;
-		int t = m / d;
-		ans += 1ll * mu[d] * (n / d) * ((t / k) * pre[k] + pre[t % k]);
+	for(int l = 1, r; l <= n && l <= m; l = r + 1) {
+		r = min(n / (n/l), m / (m/l)); 
+		int p = m / l;
+		ans += (calc(r, k) - calc(l-1, k)) * (n / l) * ((p/k) * cnt[k] + cnt[p%k]);
 	}
+
 	cout << ans << "\n";
-	
+
 	return 0;
 }
