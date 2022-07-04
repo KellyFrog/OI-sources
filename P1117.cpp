@@ -3,164 +3,128 @@
 // URL: https://www.luogu.com.cn/problem/P1117
 // Memory Limit: 512 MB
 // Time Limit: 1500 ms
+// Create Time: 2022-07-04 10:19:23
+// Author: Chen Kaifeng
 // 
 // Powered by CP Editor (https://cpeditor.org)
-
-// Happy Chinese new year! (Feb. 12th, 2021)
-
-/*
- * Codeforces @Chenkaifeng
- * Luogu @longer_name
- */
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
 typedef long long ll;
-typedef unsigned long long ull;
-typedef double db;
-typedef long double ldb;
-typedef vector<int> vi;
-typedef pair<int, int> pii;
 #define fi first
 #define se second
-
-#if __cplusplus < 201703L
-#define rg register
-#else
-#define rg
-#endif
-
 #define mp make_pair
 #define pb push_back
 #define pf push_front
+#define rep(i, s, t) for (int i = s; i <= t; ++i)
+#define per(i, s, t) for (int i = t; i >= s; --i)
 
-#define rep(i, s, t) for (rg int i = s; i <= t; i++)
-#define per(i, s, t) for (rg int i = t; i >= s; i--)
-#define OK cerr << "OK!\n"
+const int N = 6e4 + 5;
 
-namespace fastio {
-	const int SIZE = (1 << 20) + 1;
-	char ibuf[SIZE], *iS, *iT, obuf[SIZE], *oS = obuf, *oT = obuf + SIZE - 1;
-	char _st[55];
-	int _qr = 0;
-
-	inline char getchar() {
-		return (iS == iT ? iT = (iS = ibuf) + fread(ibuf, 1, SIZE, stdin),
-		        (iS == iT ? EOF : *iS++) : *iS++);
-	}
-	inline void qread() {}
-	template <typename T1, typename... T2>
-	inline void qread(T1 &x, T2 &...ls) {
-		x = 0;
-		rg char ch = ' ';
-		rg int ps = 1;
-		while (!isdigit(ch) && ch != '-') ch = getchar();
-		if (ch == '-') ps = -1, ch = getchar();
-		while (isdigit(ch)) x = x * 10 + ch - '0', ch = getchar();
-		x *= ps;
-		qread(ls...);
-	}
-
-	inline void flush() {
-		fwrite(obuf, 1, oS - obuf, stdout);
-		oS = obuf;
-		return;
-	}
-	inline void putchar(char _x) {
-		*oS++ = _x;
-		if (oS == oT) flush();
-	}
-	template <typename T>
-	inline void qwrite(T x) {
-		if (x < 0) putchar('-'), x = -x;
-		if (x < 10) return putchar('0' + x), void();
-		qwrite(x / 10), putchar('0' + (x % 10));
-	}
-
-	template <typename T>
-	inline void qwrite(T x, char ch) {
-		qwrite(x), putchar(ch);
-	}
-};  // namespace fastio
-
-#ifndef ONLINE_JUDGE
-
-void debug(const char *s) {
-	cerr << s;
-}
-template <typename T1, typename... T2>
-void debug(const char *s, const T1 x, T2... ls) {
-	int p = 0;
-	while (*(s + p) != '\0') {
-		if (*(s + p) == '{' && *(s + p + 1) == '}') {
-			cerr << x;
-			debug(s + p + 2, ls...);
-			return;
-		}
-		cerr << *(s + p++);
-	}
-}
-
-#else
-#define debug(...) void(0)
-#endif
-
-const int N = 1e5 + 5;
-const ll base = 131;
-const ll mod = 1234567891;
-
-ll delta1[N], delta2[N];
-char S[N];
 int n;
-ll pw[N], hs[N];
+char s[N], ss[N];
+int rk[N<<1], sa[N], oldrk[N<<1], cnt[N], tmp[N], h[N];
+int st[20][N], lg2[N];
+int ans1[N], ans2[N];
 
-inline ll gethash(int s, int t) {
-	return ((hs[t] - pw[t-s+1] * hs[s-1]) % mod + mod) % mod;
+inline bool iseq(int i, int j, int w) {
+	return oldrk[i] == oldrk[j] && oldrk[i+w] == oldrk[j+w];
 }
 
-inline bool check(int s1, int t1, int s2, int t2) {
-	return gethash(s1, t1) == gethash(s2, t2);
+void buildsa() {
+	rep(i, 1, 2*n+1) rk[i] = ss[i];
+	int p = 300;
+	for(int w = 1; w <= 2*n+1; w <<= 1) {
+		rep(i, 0, p) cnt[i] = 0;
+		rep(i, 1, 2*n+1) ++cnt[rk[i+w]];
+		rep(i, 1, p) cnt[i] += cnt[i-1];
+		per(i, 1, 2*n+1) tmp[cnt[rk[i+w]]--] = i;
+		rep(i, 0, p) cnt[i] = 0;
+		rep(i, 1, 2*n+1) ++cnt[rk[i]];
+		rep(i, 1, p) cnt[i] += cnt[i-1];
+		per(i, 1, 2*n+1) sa[cnt[rk[tmp[i]]]--] = tmp[i];
+		memcpy(oldrk, rk, sizeof rk);
+		p = 0;
+		rep(i, 1, 2*n+1) {
+			if(!iseq(sa[i], sa[i-1], w)) ++p;
+			rk[sa[i]] = p;
+		}
+		if(p == 2*n+1) break;
+	}
+}
+
+void buildh() {
+	int p = 0;
+	rep(i, 1, 2*n+1) {
+		if(p) --p;
+		while(i+p <= 2*n+1 && sa[rk[i]-1]+p <= 2*n+1 && ss[i+p] == ss[sa[rk[i]-1]+p]) ++p;
+		h[rk[i]] = p;
+	}
+}
+
+void buildst() {
+	lg2[0] = -1;
+	rep(i, 1, 2*n+1) lg2[i] = lg2[i>>1] + 1;
+	rep(i, 1, 2*n+1) st[0][i] = h[i];
+	rep(j, 1, 19) rep(i, 1, 2*n+1) {
+		if(i + (1<<j) - 1 > 2*n+1) break;
+		st[j][i] = min(st[j-1][i], st[j-1][i+(1<<j>>1)]);
+	}
+}
+
+inline int lcp(int i, int j) {
+	i = rk[i], j = rk[j];
+	if(i > j) swap(i, j);
+	++i;
+	int k = lg2[j-i+1];
+	return min(st[k][i], st[k][j-(1<<k)+1]);
 }
 
 void solve() {
-	scanf("%s", S+1);
-	debug("solve = {}\n", S+1);
-	n = strlen(S+1);
-	memset(delta1, 0, sizeof delta1);
-	memset(delta2, 0, sizeof delta2);
-	pw[0] = 1;
-	rep(i, 1, n) pw[i] = pw[i-1] * base % mod;
-	rep(i, 1, n) hs[i] = (base * hs[i-1] + S[i]) % mod;
-	rep(i, 1, n) cerr << S[i] << " \n"[i == n];
-	cerr << "  ";
-	rep(i, 2, n) {
-		int L = 1, R = min(i-1, n-i+1);
-		int res = 0;
-		while(L <= R) {
-			int mid = L + R >> 1;
-			if(check(i-mid, i-1, i, i+mid-1)) res = mid, L = mid + 1;
-			else R = mid - 1;
+	cin >> (s+1);
+	n = strlen(s+1);
+	rep(i, 1, n) ss[i] = s[i];
+	ss[n+1] = '#';
+	rep(i, 1, n) ss[i+n+1] = s[n-i+1];
+	rep(i, 1, 4*n+2) rk[i] = sa[i] = 0;
+	buildsa();
+	buildh();
+	buildst();
+	rep(i, 1, n+1) ans1[i] = ans2[i] = 0;
+	rep(len, 1, n) {
+		for(int i = len; i+len <= n; i += len) {
+			int x = lcp(n-i+1 + n+1, n-(i+len)+1 + n+1);
+			int y = lcp(i, i+len);
+			int l = max(i-len+1, i-x+1);
+			int r = min(i, i-len+y);
+			if(l > r) continue;
+			
+			++ans2[l], --ans2[r+1];
+
+			int l1 = l+2*len-1;
+			int r1 = min(n, r+2*len-1);
+
+			if(l1 <= r1) {
+				++ans1[l1], --ans1[r1+1];
+			}
 		}
-		cerr << res << " \n"[i == n];
-		if(!res) continue;
-		delta2[i]++, delta2[i+res]--;
-		delta1[i-res]++, delta1[i]--;
 	}
-	rep(i, 1, n) delta1[i] += delta1[i-1], delta2[i] += delta2[i-1];
-	rep(i, 1, n) cerr << delta1[i] << " \n"[i == n];
-	rep(i, 1, n) cerr << delta2[i] << " \n"[i == n];
-	
+	rep(i, 1, n) ans1[i] += ans1[i-1], ans2[i] += ans2[i-1];
 	ll ans = 0;
-	rep(i, 1, n-2) ans += delta2[i] * delta1[i+1];
-	printf("%lld\n", ans);
+	rep(i, 1, n) ans += 1ll * ans1[i] * ans2[i+1];
+	cout << ans << '\n';
 }
 
 int main() {
-	int t;
-	scanf("%d", &t);
+	ios::sync_with_stdio(false);
+	cin.tie(nullptr), cout.tie(nullptr);
+	cout << fixed << setprecision(15); 
+	cerr << fixed << setprecision(15);
+
+	int t; cin >> t;
 	while(t--) solve();
-	fastio::flush();
+	
 	return 0;
 }
