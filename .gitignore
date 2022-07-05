@@ -1,4 +1,6 @@
 *.exe
+*.lib
+*.o
 testdata/
 .vscode/
 downloads
