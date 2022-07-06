@@ -1,0 +1,11 @@
+*.exe
+testdata/
+.vscode/
+downloads
+contests/
+wc2022/
+.in.swp
+in
+out
+ans
+duipai/
