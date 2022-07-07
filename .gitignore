@@ -13,3 +13,6 @@ ans
 duipai/
 tmp/
 *~
+*.out
+*.ans
+
