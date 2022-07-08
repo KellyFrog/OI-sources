@@ -22,13 +22,15 @@ typedef long long ll;
 #define per(i, s, t) for (int i = t; i >= s; --i)
 
 const int N = 1e5 + 5;
+const ll inf = 0x3f3f3f3f3f3f3f3f;
 
 int n, m;
 vector<pair<int, int>> adj[N];
 vector<tuple<int, int, int>> nd[N];
 int rt[N], ls[N*20], rs[N*20], na[N*20], nb[N*20], tt;
+ll va[N*20], vb[N*20];
 int px[N], py[N];
-ll dis[N], w[N], d[N], ans;
+ll dis[N], w[N], d[N], res;
 int lg2[N], dep[N], dfn[N], eul[N], st[20][N], ecnt;
 
 inline void dfs1(int u, int fa, int lw) {
@@ -65,7 +67,19 @@ inline ll getdis(int x, int y) {
 	return dis[x] + dis[y] - 2 * dis[LCA(x, y)];
 }
 
-inline void insert(int& o, int )
+inline void insert(int& o, int p, int u, ll val, int l, int r) {
+	if(!o) {
+		o = ++tt;
+		ls[o] = rs[o] = va[o] = vb[o] = na[o] = nb[o] = 0;
+		return;
+	}
+	if(l == r) {
+		assert(na[o] == 0);
+		na[o] = nb[o] = u;
+		va[o] = vb[o] = d[p] - 2 * w[p];
+		ans[o] = -inf;
+	}
+}
 
 inline void dfs2(int u, int fa) {
 	for(auto [i, a, b] : nd[u]) {
@@ -77,7 +91,7 @@ void solve() {
 	cin >> n >> m;
 	ecnt = tt = 0;
 	rep(i, 1, n) rt[i] = 0, adj[i].clear(), nd[i].clear();
-	ans = 1e18;
+	res = -1e18;
 
 	rep(i, 2, n) {
 		int u, v, w;
