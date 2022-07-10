@@ -28,9 +28,9 @@ int n, m;
 vector<pair<int, int>> adj[N];
 vector<tuple<int, int, int>> nd[N];
 int rt[N], ls[N*20], rs[N*20], na[N*20], nb[N*20], tt;
-ll va[N*20], vb[N*20];
+ll va[N*20], vb[N*20], ans[N*20];
 int px[N], py[N];
-ll dis[N], w[N], d[N], res;
+ll dis[N], w[N], res;
 int lg2[N], dep[N], dfn[N], eul[N], st[20][N], ecnt;
 
 inline void dfs1(int u, int fa, int lw) {
@@ -64,34 +64,74 @@ inline int LCA(int x, int y) {
 }
 
 inline ll getdis(int x, int y) {
+	if(!x || !y) return -inf;
 	return dis[x] + dis[y] - 2 * dis[LCA(x, y)];
+}
+
+inline void pushup(int o) {
+	ll val[4], pos[4];
+	val[0] = va[ls[o]], pos[0] = na[ls[o]];
+	val[1] = vb[ls[o]], pos[1] = nb[ls[o]];
+	val[2] = va[rs[o]], pos[2] = na[rs[o]];
+	val[3] = vb[rs[o]], pos[3] = nb[rs[o]];
+	ans[o] = -inf;
+	rep(i, 0, 3) rep(j, 0, i-1) {
+		ll curans = val[i] + val[j] + getdis(pos[i], pos[j]);
+		if(curans > ans[o]) {
+			ans[o] = curans;
+			na[o] = pos[i], va[o] = val[i];
+			nb[o] = pos[j], vb[o] = val[j];
+		}
+	}
 }
 
 inline void insert(int& o, int p, int u, ll val, int l, int r) {
 	if(!o) {
 		o = ++tt;
 		ls[o] = rs[o] = va[o] = vb[o] = na[o] = nb[o] = 0;
+		ans[o] = -inf;
 		return;
 	}
 	if(l == r) {
 		assert(na[o] == 0);
 		na[o] = nb[o] = u;
-		va[o] = vb[o] = d[p] - 2 * w[p];
+		va[o] = vb[o] = val;
 		ans[o] = -inf;
+		return;
 	}
+	int mid = l + r >> 1;
+	if(p <= mid) insert(ls[o], p, u, val, l, mid);
+	else insert(rs[o], p, u, val, mid+1, r);
+	pushup(o);
+}
+
+inline void merge(int& o1, int o2, int l, int r) {
+	if(!o1 || !o2) return o1 += o2, void();
+	if(l == r) return o1 = 0, void();
+	int mid = l + r >> 1;
+	merge(ls[o1], ls[o2], l, mid);
+	merge(rs[o1], rs[o2], mid + 1, r);
+	pushup(o1);
 }
 
 inline void dfs2(int u, int fa) {
 	for(auto [i, a, b] : nd[u]) {
-
+		ll v = getdis(a, b) + dis[a] - w[i];
+		insert(rt[u], i, b, v, 1, m);
 	}
+	for(auto [v, w] : adj[u]) {
+		if(v == fa) continue;
+		dfs2(v, u);
+		merge(rt[u], rt[v], 1, m);
+	}
+	res = max(res, (ans[rt[u]] - 2 * dis[u]) / 2);
 }
 
 void solve() {
 	cin >> n >> m;
 	ecnt = tt = 0;
 	rep(i, 1, n) rt[i] = 0, adj[i].clear(), nd[i].clear();
-	res = -1e18;
+	res = -inf;
 
 	rep(i, 2, n) {
 		int u, v, w;
@@ -105,10 +145,14 @@ void solve() {
 
 	rep(i, 1, m) {
 		cin >> px[i] >> py[i] >> w[i];
-		d[i] = getdis(px[i], py[i]);
 		nd[px[i]].emplace_back(i, px[i], py[i]);
 		nd[py[i]].emplace_back(i, py[i], px[i]);
 	}
+
+	dfs2(1, 0);
+
+	if(res < -1e18) cout << "F" << "\n";
+	else cout << res << "\n";
 }
 
 int main() {
@@ -116,6 +160,9 @@ int main() {
 	cin.tie(nullptr), cout.tie(nullptr);
 	cout << fixed << setprecision(15); 
 	cerr << fixed << setprecision(15);
+
+	int t; cin >> t;
+	while(t--) solve();
 	
 	return 0;
 }
