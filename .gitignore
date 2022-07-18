@@ -15,4 +15,6 @@ tmp/
 *~
 *.out
 *.ans
-
+tmp*
+*.exp
+*.pdb
