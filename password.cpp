@@ -44,8 +44,8 @@ template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; 
 
 std::mt19937 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
 
-string s = "!@#$%^&*()_+1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
-// string s = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
+// string s = "!@#$%^&*()_+1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
+string s = "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
 
 
 int main() {
