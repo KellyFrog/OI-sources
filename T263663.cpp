@@ -30,7 +30,7 @@ int qpow(int x, int p) {
 		if(p & 1) res = 1ll * res * base % P;
 		base = 1ll * base * base % P;
 		p >>= 1;
-	}\
+	}
 	return res;
 }
 
@@ -42,25 +42,25 @@ bool ism[N][N];
 int a[N][N], b[N], c[N][N], d[N];
 vector<tuple<int, int, int>> tr[N<<2];
 int stk[N], top;
+int res[N], inv[N];
 
 int insert() {
-	cerr << "insert=";
-	rep(i, 1, t+1) cerr << b[i] << " \n"[i == t+1];
 	rep(i, 1, t) {
 		if(b[i]) {
 			if(!a[i][i]) {
 				memcpy(a[i], b, sizeof a[i]);
+				inv[i] = qpow(a[i][i], P - 2);
 				return i;
 			} else {
-				int x = 1ll * b[i] * qpow(a[i][i], P - 2) % P;
+				int x = 1ll * b[i] * inv[i] % P;
 				rep(j, i, t+1) {
 					b[j] = (b[j] - 1ll * x * a[i][j]) % P;
 				}
 			}
 		}
 	}
-	assert(0);
-	return -1;
+	// assert(0);
+	return 0;
 }
 
 inline void insert(int o, int ql, int qr, int i, int j, int id, int l, int r) {
@@ -75,43 +75,38 @@ inline void insert(int o, int ql, int qr, int i, int j, int id, int l, int r) {
 
 inline void dfs(int o, int l, int r) {
 	int top0 = top;
-	cerr << "d@ " << o << " " << l << " " << r << "\n";
 	for(auto [i, j, x]  : tr[o]) {
-		cerr << "ins=" << i << " " << j << " " << x << "\n";
 		memset(b, 0, sizeof b);
 		int p[4];
 		if(x == 0) memcpy(p, ::p[i][j], sizeof p);
 		else memcpy(p, ::qz[x], sizeof p);
 		rep(k, 1, t+1) b[k] = (f[i][j][k] - 1ll * p[0] * f[i-1][j][k] - 1ll * p[1] * f[i+1][j][k] - 1ll * p[2] * f[i][j-1][k] - 1ll * p[3] * f[i][j+1][k]) % P;
-		++b[t+1];
+		b[t+1] = -b[t+1] + 1;
 		stk[++top] = insert();
 	}
 	if(l == r) {
 		memcpy(c, a, sizeof c);
-		rep(i, 1, t) rep(j, 1, t+1) cerr<< c[i][j] << " \n"[j == t+1];
 		per(i, 1, t) per(j, 1, i-1) {
 			if(c[j][i]) {
-				int x = 1ll * c[j][i] * qpow(c[i][i], P - 2);
-				rep(k, j, t+1) c[j][k] = (c[j][k] - 1ll * c[i][k] * x) % P;
+				int x = 1ll * c[j][i] * inv[i] % P;
+				int k = 0;
+				k = j; c[j][k] = (c[j][k] - 1ll * c[i][k] * x) % P;
+				k = t+1; c[j][k] = (c[j][k] - 1ll * c[i][k] * x) % P;
 			}
 		}
-		cerr << "---" << "\n";
-		rep(i, 1, t) rep(j, 1, t+1) cerr <<  c[i][j] << " \n"[j == t+1];
-		rep(i, 1, t) {
-			d[i] = 1ll * c[i][t+1] * qpow(c[i][i], P - 2) % P;
-		}
+		rep(i, 1, t) d[i] = 1ll * c[i][t+1] * inv[i] % P;
 		d[t+1] = 1;
 		int ans = 0;
-		rep(i, 1, n) rep(j, 1, m) rep(k, 1, t+1) ans = (ans + 1ll * f[i][j][k] * d[k]) % P;
+		rep(k, 1, t+1) ans = (ans + 1ll * res[k] * d[k]) % P;
 		cout << (ans + P) % P << "\n";
 	} else {
 		int mid = l + r >> 1;
 		dfs(o << 1, l, mid);
 		dfs(o << 1 | 1, mid + 1, r);
 	}
-	while(top0 > top) {
-		memset(a[stk[top0]], 0, sizeof a[stk[top0]]);
-		--top0;
+	while(top0 < top) {
+		memset(a[stk[top]], 0, sizeof a[stk[top]]);
+		--top;
 	}
 }
 
@@ -137,17 +132,13 @@ int main() {
 	rep(i, 1, n) rep(j, 1, m) {
 		if(!vis[i][j]) {
 			int inv = qpow(p[i-1][j][1], P - 2);
-			cerr << ( - (1ll * p[i-1][j][0] * (f[i-2][j][t+1] + 1) + 1ll * p[i-1][j][2] * (f[i-1][j-1][t+1] + 1) + 1ll * p[i-1][j][3] * (f[i-1][j+1][t+1] + 1))) % P << " \n"[j == m];
 			f[i][j][t+1] = ((f[i-1][j][t+1] - 1ll * p[i-1][j][0] * (f[i-2][j][t+1] + 1) - 1ll * p[i-1][j][2] * (f[i-1][j-1][t+1] + 1) - 1ll * p[i-1][j][3] * (f[i-1][j+1][t+1] + 1)) % P * inv - 1) % P;
 			rep(k, 1, t) f[i][j][k] = (f[i-1][j][k] - 1ll * p[i-1][j][0] * f[i-2][j][k] - 1ll * p[i-1][j][2] * f[i-1][j-1][k] - 1ll * p[i-1][j][3] * f[i-1][j+1][k]) % P * inv % P;
 		} else {
 			f[i][j][vis[i][j]] = 1;
 		}
 	}
-	rep(i, 1, n) rep(j, 1, m) {
-		cerr << "i=" << i << ",j=" << j << " ";
-		rep(k, 1, t+1) cerr << f[i][j][k] << " \n"[k == t+1];
-	}
+	rep(i, 1, n) rep(j, 1, m) rep(k, 1, t+1) res[k] = (res[k] + f[i][j][k]) % P;
 	dfs(1, 0, q);
 	
 	return 0;
