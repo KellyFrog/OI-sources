@@ -40,14 +40,14 @@ int main() {
 	set<pair<double, int>> s;
 	
 	auto div = [&](int x, int y) { return y == 0 ? 1e18 : 1.0 * x / y;; };
-	rep(i, 2, n) s.emplace(div(cnt[1][i], cnt[0][i]), i);
+	rep(i, 1, n) s.emplace(div(cnt[1][i], cnt[0][i]), i);
 	rep(i, 2, n) {
-		int u = s.begin()->se;
+		auto it = s.begin();
+		if(it->se == 1) ++it;
+		int u = it->se;
 		int f = find(fat[u]);
-		cerr << u << " " << f << " " << s.begin()->fi << "\n";
 		s.erase(mp(div(cnt[1][u], cnt[0][u]), u));
 		s.erase(mp(div(cnt[1][f], cnt[0][f]), f));
-		cerr << "get " << cnt[1][f] << " " << cnt[0][u] << "\n";
 		ans += 1ll * cnt[1][f] * cnt[0][u];
 		uni[u] = f;
 		cnt[0][f] += cnt[0][u];
