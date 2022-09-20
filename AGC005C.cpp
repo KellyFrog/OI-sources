@@ -43,10 +43,6 @@ int main() {
 		}
 	}
 	rep(i, 1, n) ++cnt[a[i]];
-	if(cnt[mx] < 2) {
-		cout << "Impossible" << "\n";
-		return 0;
-	}
 	rep(i, 1, n) if(2 * i < mx && cnt[i]) {
 		cout << "Impossible" << "\n";
 		return 0;
@@ -61,6 +57,10 @@ int main() {
 			return 0;
 		}
 	} else {
+		if(cnt[mx/2+1] != 2) {
+			cout << "Impossible" << "\n";
+			return 0;
+		}
 		rep(i, mx/2+1, mx) if(cnt[i] < 2) {
 			cout << "Impossible" << "\n";
 			return 0;
