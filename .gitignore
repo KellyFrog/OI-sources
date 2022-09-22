@@ -6,7 +6,7 @@ testdata/
 downloads
 contests/
 wc2022/
-.in.swp
+*.swp
 in
 out
 ans
