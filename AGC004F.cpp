@@ -23,7 +23,8 @@ const int N = 1e5 + 5;
 
 int n, m;
 vector<int> adj[N];
-int uni[N], dep[N], cnt[N][2], s[N][2];
+int uni[N], dep[N], d[N], fat[N], cnt[N][2], s[N][2];
+bool vis[N];
 ll ans = 0;
 int eu = 1, ev = 1;
 
@@ -31,17 +32,19 @@ inline int find(int x) { return x == uni[x] ? x : uni[x] = find(uni[x]); }
 
 inline void dfs(int u, int fa) {
 	dep[u] = dep[fa] ^ 1;
+	d[u] = d[fa] + 1;
+	fat[u] = fa;
 	cnt[u][dep[u]] = 1;
 	cnt[u][dep[u]^1] = 0;
 	cnt[u][0] += s[u][0];
 	cnt[u][1] += s[u][1];
 
-	for(int v : adj[u]) if(v != fa) {
+	for(int v : adj[u]) if(v != fa && !vis[v]) {
 		dfs(v, u);
 		cnt[u][0] += cnt[v][0];
 		cnt[u][1] += cnt[v][1];
 	}
-	ans += abs(cnt[u][0] - cnt[u][1]);
+	if(!vis[u]) ans += abs(cnt[u][0] - cnt[u][1]);
 }
 
 
@@ -86,7 +89,6 @@ int main() {
 		}
 
 		dfs(1, 0);
-
 		
 		if(cnt[1][0] != cnt[1][1]) {
 			cout << -1 << "\n";
@@ -94,6 +96,34 @@ int main() {
 		}
 		cout << ans << "\n";
 	} else {
+		if(cnt[1][0] != cnt[1][1]) {
+			cout << -1 << "\n";
+			return 0;
+		}
+		vector<int> v, p, p1, p2;
+		int x = eu, y = ev;
+		while(x != y) {
+			if(d[x] < d[y]) p2.pb(y), y = fat[y];
+			else p1.pb(x), x = fat[x];
+		}
+		p.insert(p.end(), p1.begin(), p1.end());
+		p.pb(x);
+		p.insert(p.end(), p2.rbegin(), p2.rend());
+		ans = 0;
+		for(int u : p) vis[u] = 1;
+		for(int i = 0; i < p.size(); ++i) {
+			dep[0] = i & 1;
+			dfs(p[i], 0);
+		}
+		int pre = 0;
+		for(int u : p) {
+			pre += cnt[u][0] - cnt[u][1];
+			v.pb(pre);
+		}
+		sort(v.begin(), v.end());
+		int val = v[v.size()/2];
+		for(int x : v) ans += abs(val - x);
+		cout << ans << "\n";
 	}
 
 
