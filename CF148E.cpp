@@ -44,7 +44,6 @@ int main() {
 		for(int j = 0; j <= k; ++j) {
 			for(int jj = -1; jj < j; ++jj) val[j] = max(val[j], (jj >= 0 ? s[jj] : 0) + (j-jj-2 >= 0 ? t[j-jj-2] : 0));
 		}
-		for(int j = 0; j <= k; ++j) cerr << val[j] << " \n"[j == k];
 		per(j, 1, m) rep(jj, 1, min(j, k)) dp[j] = max(dp[j], dp[j-jj] + val[jj]);
 	}
 	cout << dp[m] << "\n";
