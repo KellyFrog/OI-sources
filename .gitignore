@@ -6,13 +6,14 @@ testdata/
 downloads
 contests/
 wc2022/
-.in.swp
+*.swp
 in
 out
 ans
 duipai/
 tmp/
 *~
+*.in
 *.out
 *.ans
 tmp*
