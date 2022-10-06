@@ -1,11 +1,3 @@
-// Problem: CF837D Round Subset
-// Contest: Luogu
-// URL: https://www.luogu.com.cn/problem/CF837D
-// Memory Limit: 250 MB
-// Time Limit: 2000 ms
-// 
-// Powered by CP Editor (https://cpeditor.org)
-
 #include <bits/stdc++.h>
 
 using namespace std;
