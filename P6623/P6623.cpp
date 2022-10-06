@@ -1,0 +1,136 @@
+// Problem: P6623 [省选联考 2020 A 卷] 树
+// Contest: Luogu
+// URL: https://www.luogu.com.cn/problem/P6623
+// Memory Limit: 512 MB
+// Time Limit: 2000 ms
+// Create Time: 2022-03-17 16:06:38
+// Input/Output: stdin/stdout
+// 
+// Powered by CP Editor (https://cpeditor.org)
+
+#include <bits/stdc++.h>
+
+using namespace std;
+
+typedef long long ll;
+#define fi first
+#define se second
+#define mp make_pair
+#define pb push_back
+#define pf push_front
+#define rep(i, s, t) for (int i = s; i <= t; ++i)
+#define per(i, s, t) for (int i = t; i >= s; --i)
+
+namespace nqio{const unsigned R=4e5,W=4e5;char*a,*b,i[R],o[W],*c=o,*d=o+W,h[40],*p=h,y;bool s;struct q{void r(char&x){x=a==b&&(b=(a=i)+fread(i,1,R,stdin),a==b)?-1:*a++;}void f(){fwrite(o,1,c-o,stdout);c=o;}~q(){f();}void w(char x){*c=x;if(++c==d)f();}q&operator>>(char&x){do r(x);while(x<=32);return*this;}q&operator>>(char*x){do r(*x);while(*x<=32);while(*x>32)r(*++x);*x=0;return*this;}template<typename t>q&operator>>(t&x){for(r(y),s=0;!isdigit(y);r(y))s|=y==45;if(s)for(x=0;isdigit(y);r(y))x=x*10-(y^48);else for(x=0;isdigit(y);r(y))x=x*10+(y^48);return*this;}q&operator<<(char x){w(x);return*this;}q&operator<<(char*x){while(*x)w(*x++);return*this;}q&operator<<(const char*x){while(*x)w(*x++);return*this;}template<typename t>q&operator<<(t x){if(!x)w(48);else if(x<0)for(w(45);x;x/=10)*p++=48|-(x%10);else for(;x;x/=10)*p++=48|x%10;while(p!=h)w(*--p);return*this;}}qio;}using nqio::qio;
+
+#define OK debug("OK!\n")
+#ifndef ONLINE_JUDGE
+namespace debuger{void debug(const char *s) {cerr << s;}template<typename T1,typename... T2>void debug(const char*s, const T1 x, T2...ls) { int p=0; while(*(s + p)!='\0') {if(*(s+p)=='{'&&*(s+p+1)=='}'){cerr << x;debug(s + p + 2, ls...);return;}cerr << *(s + p++);}}}using debuger::debug;
+#else
+#define debug(...) void(0)
+#endif
+
+// const int mod = 1e9 + 7;
+const int mod = 998244353;
+
+int qpow(int x, ll p) {
+	int res = 1, base = x;
+	while(p) {
+		if(p & 1) res = 1ll * res * base % mod;
+		base = 1ll * base * base % mod;
+		p >>= 1;
+	}
+	return res;
+}
+
+template<typename T> inline void upd(T& x, const T& y) {	x += y;	if(x >= mod) x -= mod; }
+template<typename T> inline void upd(T& x, const T& y, const T& z) { x = y + z; if(x >= mod) x -= mod; }
+
+/* template ends here */
+
+mt19937_64 mtrnd(std::chrono::system_clock::now().time_since_epoch().count());
+
+const int N = 5.3e5 + 5;
+const int K = 23;
+
+int n;
+int a[N];
+vector<int> adj[N];
+ll ans = 0;
+
+int ls[N*K], rs[N*K], dep[N*K], cnt[N*K], val[N*K];
+int rt[N], tt;
+
+inline void pushup(int o) {
+	val[o] = val[ls[o]] ^ val[rs[o]];
+	if(rs[o] && cnt[rs[o]] % 2 == 1) {
+		val[o] ^= 1 << dep[o];
+	}
+	if(dep[o] != 21) cnt[o] = cnt[ls[o]] + cnt[rs[o]];
+}
+
+inline void add(int& o, int x, int d) {
+	if(d == 23) {
+		return;
+	}
+	if(!o) {
+		o = ++tt;
+		dep[o] = d;
+	}
+	++cnt[o];
+
+	if(x >> d & 1) {
+		add(rs[o], x, d + 1);
+	} else {
+		add(ls[o], x, d + 1);
+	}
+	pushup(o);
+}
+
+inline void modify(int o) {
+	if(!o) return;
+	swap(ls[o], rs[o]);
+	modify(ls[o]);
+	pushup(o);
+}
+
+inline void merge(int& o1, int o2) {
+	if(!o1 || !o2) return o1 += o2, void();
+	cnt[o1] += cnt[o2];
+	val[o1] ^= val[o2];
+	merge(ls[o1], ls[o2]);
+	merge(rs[o1], rs[o2]);
+}
+
+inline void dfs(int u, int fa) {
+	for(int v : adj[u]) {
+		dfs(v, u);
+		merge(rt[u], rt[v]);
+	}
+	modify(rt[u]);
+	add(rt[u], a[u], 0);
+	ans += val[rt[u]];
+	// debug("res[{}] = {}\n", u, val[rt[u]]);
+}
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(nullptr), cout.tie(nullptr);
+	cout << fixed << setprecision(15); 
+	cerr << fixed << setprecision(15);
+	
+	cin >> n;
+	rep(i, 1, n) cin >> a[i];
+	rep(i, 2, n) {
+		int f;
+		cin >> f;
+		adj[f].pb(i);
+	}
+
+	dfs(1, 0);
+	
+	cout << ans << "\n";
+	
+	return 0;
+}
+
