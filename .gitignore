@@ -16,6 +16,9 @@ tmp/
 *.in
 *.out
 *.ans
+*/*.in
+*/*.out
+*/*.ans
 tmp*
 *.exp
 *.pdb
