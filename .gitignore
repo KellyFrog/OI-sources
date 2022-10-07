@@ -1,3 +1,4 @@
+*.exe
 *.lib
 *.o
 testdata/
@@ -15,6 +16,7 @@ tmp/
 *.in
 *.out
 *.ans
+*/*.exe
 */*.in
 */*.out
 */*.ans
