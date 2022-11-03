@@ -21,13 +21,35 @@ typedef unsigned long long ull;
 #define per(i, s, t) for (int i = t; i >= s; --i)
 
 const int N = 5e5 + 5;
+const int P1 = 998244353;
+const int P2 = 1e9 + 7;
+const int P3 = 1e9 + 9;
 
+struct E {
+	int v1, v2, v3;
+	E(int v1, int v2, int v3) : v1(v1), v2(v2), v3(v3) {}
+	E(ull v1, ull v2, ull v3) : v1(v1 % P1), v2(v2 % P2), v3(v3 % P3) {}
+	E() {}
+};
+
+E operator + (const E& x, const E& y) {
+	return E((x.v1 + y.v1) % P1, (x.v2 + y.v2) % P2, (x.v3 + y.v3) % P3);
+}
+
+E operator - (const E& x, const E& y) {
+	return E((x.v1 - y.v1 + P1) % P1, (x.v2 - y.v2 + P2) % P2, (x.v3 - y.v3 + P3) % P3);
+}
+
+bool operator == (const E& x, const E& y) {
+	return x.v1 == y.v1 && x.v2 == y.v2 && x.v3 == y.v3;
+}
+	
 mt19937_64 mtrnd(0x114514);
 int n, m, q;
 vector<int> adj[N];
 set<int> lst[N];
-int tp[N], d[N];
-ull val[N], nxt[N];
+E val[N], nxt[N], all, cur;
+int op[N];
 
 int main() {
 	ios::sync_with_stdio(false);
@@ -39,83 +61,53 @@ int main() {
 	rep(i, 1, m) {
 		int u, v; cin >> u >> v;
 		adj[v].pb(u);
-		++d[u];
 	}
-	rep(i, 1, n) val[i] = mtrnd();
-	rep(u, 1, n) for(int v : adj[u]) nxt[u] ^= val[v];
-
-	ull all = 0, cur = 0;
-	int sum = 0;
-
-	rep(u, 1, n) {
-		all ^= val[u];
-		if(d[u] & 1) cur ^= val[u];
-		sum += d[u];
+	rep(i, 1, n) val[i] = E((ull)mtrnd(), (ull)mtrnd(), (ull)mtrnd());
+	rep(u, 1, n) for(int v : adj[u]) nxt[u] = nxt[u] + val[v];
+	rep(i, 1, n) {
+		all = all + val[i];
+		cur = cur + nxt[i];
 	}
-
-	auto add = [&](int u, int v) {
-		cur ^= val[u];
-		++sum;
-		if(tp[v] == 0) lst[v].erase(u);
-		else lst[v].insert(u);
-	};
-
-	auto del = [&](int u, int v) {
-		cur ^= val[u];
-		--sum;
-		if(tp[v] == 0) lst[v].insert(u);
-		else lst[v].erase(u);
-	};
-
 	cin >> q;
-
 	while(q--) {
-		int op; cin >> op;
-		if(op == 1) {
+		int opt; cin >> opt;
+		if(opt == 1) {
 			int u, v; cin >> u >> v;
-			del(u, v);
-		} else if(op == 3) {
+			cur = cur - val[u];
+			if(op[v] == 0) lst[v].insert(u);
+			else lst[v].erase(u);
+		} else if(opt == 3) {
 			int u, v; cin >> u >> v;
-			add(u, v);
-		} else if(op == 2) {
+			cur = cur + val[u];
+			if(op[v] == 0) lst[v].erase(u);
+			else lst[v].insert(u);
+		} else if(opt == 2) {
 			int u; cin >> u;
-			if(tp[u] == 0) {
-				for(int v : lst[u]) {
-					cur ^= val[v];
-					++sum;
-				}
+			if(op[u] == 0) {
+				for(int v : lst[u]) cur = cur + val[v];
 				lst[u].clear();
-				sum -= adj[u].size();
-				cur ^= nxt[u];
-				tp[u] = 1;
-			} else if(tp[u] == 1) {
-				for(int v : lst[u]) {
-					cur ^= val[v];
-					--sum;
-				}
+				cur = cur - nxt[u];
+			} else {
+				for(int v : lst[u]) cur = cur - val[v];
 				lst[u].clear();
 			}
+			
+			op[u] = 1;
 		} else {
 			int u; cin >> u;
-			if(tp[u] == 0) {
-				for(int v : lst[u]) {
-					cur ^= val[u];
-					++sum;
-				}
+			if(op[u] == 0) {
+				for(int v : lst[u]) cur = cur + val[v];
 				lst[u].clear();
 			} else {
-				for(int v : lst[u]) {
-					cur ^= val[u];
-					--sum;
-				}
+				for(int v : lst[u]) cur = cur - val[v];
 				lst[u].clear();
-				sum += adj[u].size();
-				cur ^= nxt[u];
-				tp[u] = 0;
+				cur = cur + nxt[u];
 			}
+			
+			op[u] = 0;
 		}
-		cout << sum << " " << cur << " ";
-		cout << (sum == n && cur == all ? "YES" : "NO") << "\n";
+		cout << (cur == all ? "YES" : "NO") << "\n";
 	}
+	
 	return 0;
 }
