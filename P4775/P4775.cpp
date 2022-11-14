@@ -22,92 +22,120 @@ typedef long long ll;
 #define per(i, s, t) for (int i = t; i >= s; --i)
 
 const int N = 1e5 + 5;
+const int M = N * 20;
 const ll inf = 0x3f3f3f3f3f3f3f3f;
 
+struct D {
+	int x, y;
+	ll v;
+	D() {}
+	D(int x, int y, ll v) : x(x), y(y), v(v) {}
+};
+
 int n, m;
-vector<pair<int, int>> adj[N];
-vector<tuple<int, int, int>> nd[N];
-int rt[N], ls[N*20], rs[N*20], na[N*20], nb[N*20], tt;
-ll va[N*20], vb[N*20], ans[N*20];
-int px[N], py[N];
-ll dis[N], w[N], res;
-int lg2[N], dep[N], dfn[N], eul[N], st[20][N], ecnt;
+vector<pair<int, int>> adj[N], son[N];
+vector<pair<int, pair<int, int>>> ins[N], era[N];
+int dep[N], dfn[N], siz[N], dfncnt, pos[N], eul[N], eulcnt, st[19][N], lg2[N];
+ll dis[N], a[N], ans;
+pair<D, D> t[M];
+int rt[N], ls[M], rs[M], tt;
 
 inline void dfs1(int u, int fa, int lw) {
 	dis[u] = dis[fa] + lw;
 	dep[u] = dep[fa] + 1;
-	eul[dfn[u]=++ecnt] = u;
-	for(auto [v, w] : adj[u]) {
-		if(v == fa) continue;
+	siz[u] = 1;
+	eul[pos[u] = ++eulcnt] = u;
+	dfn[u] = ++dfncnt;
+	for(auto [v, w] : adj[u]) if(v != fa) {
 		dfs1(v, u, w);
-		eul[++ecnt] = u;
+		son[u].emplace_back(dfn[v], v);
+		eul[++eulcnt] = u;
+		siz[u] += siz[v];
 	}
 }
 
-inline int compare(int x, int y) { return dep[x] < dep[y] ? x : y; }
+inline int compare(int x, int y) {
+	return dep[x] < dep[y] ? x : y;
+}
 
-void buildst() {
+inline void initst() {
+	int m = 2 * n - 1;
+	rep(i, 1, m) st[0][i] = eul[i];
 	lg2[0] = -1;
-	rep(i, 1, 2*n-1) lg2[i] = lg2[i>>1] + 1;
-	rep(i, 1, 2*n-1) st[0][i] = eul[i];
-	rep(j, 1, 18) rep(i, 1, 2*n-1) {
-		if(i + (1<<j) - 1 > 2*n-1) break;
-		st[j][i] = compare(st[j-1][i], st[j-1][i+(1<<j>>1)]);
+	rep(i, 1, m) lg2[i] = lg2[i>>1] + 1;
+	rep(j, 1, 18) rep(i, 1, m) {
+		if(i + (1 << j) - 1 > m) break;
+		st[j][i] = compare(st[j-1][i], st[j-1][i+(1<<j-1)]);
 	}
 }
 
 inline int LCA(int x, int y) {
-	x = dfn[x], y = dfn[y];
+	x = pos[x], y = pos[y];
 	if(x > y) swap(x, y);
-	int k = lg2[y-x+1];
-	return compare(st[k][x], st[k][y-(1<<k)+1]);
+	int p = lg2[y-x+1];
+	return compare(st[p][x], st[p][y-(1<<p)+1]);
 }
 
 inline ll getdis(int x, int y) {
-	if(!x || !y) return -inf;
+	if(x == 0 && y == 0) return -1.5 * inf;
+	if(x == 0 || y == 0) return -inf;
 	return dis[x] + dis[y] - 2 * dis[LCA(x, y)];
 }
 
-inline void pushup(int o) {
-	ll val[4], pos[4];
-	val[0] = va[ls[o]], pos[0] = na[ls[o]];
-	val[1] = vb[ls[o]], pos[1] = nb[ls[o]];
-	val[2] = va[rs[o]], pos[2] = na[rs[o]];
-	val[3] = vb[rs[o]], pos[3] = nb[rs[o]];
-	ans[o] = -inf;
-	rep(i, 0, 3) rep(j, 0, i-1) {
-		ll curans = val[i] + val[j] + getdis(pos[i], pos[j]);
-		if(curans > ans[o]) {
-			ans[o] = curans;
-			na[o] = pos[i], va[o] = val[i];
-			nb[o] = pos[j], vb[o] = val[j];
+inline pair<D, D> merge(const pair<D, D>& x, const pair<D, D>& y) {
+	vector<pair<ll, pair<D, D>>> v;
+	v.reserve(6);
+	vector<D> d = {x.fi, x.se, y.fi, y.se};
+	for(int i = 0; i < 4; ++i) {
+		for(int j = 0; j < i; ++j) {
+			v.emplace_back(getdis(d[i].y, d[j].y) + d[i].v + d[j].v, mp(d[i], d[j]));
 		}
 	}
+	sort(v.begin(), v.end(), [&](const pair<ll, pair<D, D>>& x, const pair<ll, pair<D, D>>& y) { return x.fi > y.fi; });
+	return v[0].se;
 }
 
-inline void insert(int& o, int p, int u, ll val, int l, int r) {
-	if(!o) {
-		o = ++tt;
-		ls[o] = rs[o] = va[o] = vb[o] = na[o] = nb[o] = 0;
-		ans[o] = -inf;
-		return;
-	}
+inline int newnode() {
+	int o = ++tt;
+	ls[o] = rs[o] = 0;
+	return o;
+}
+
+inline void pushup(int o) {
+	if(!ls[o]) t[o] = t[rs[o]];
+	else if(!rs[o]) t[o] = t[ls[o]];
+	else t[o] = merge(t[ls[o]], t[rs[o]]);
+}
+
+inline void insert(int& o, int p, const D& nd, int l, int r) {
+	if(!o) o = newnode();
 	if(l == r) {
-		assert(na[o] == 0);
-		na[o] = nb[o] = u;
-		va[o] = vb[o] = val;
-		ans[o] = -inf;
+		t[o] = mp(nd, D(0, 0, 0));
 		return;
 	}
 	int mid = l + r >> 1;
-	if(p <= mid) insert(ls[o], p, u, val, l, mid);
-	else insert(rs[o], p, u, val, mid+1, r);
+	if(p <= mid) insert(ls[o], p, nd, l, mid);
+	else insert(rs[o], p, nd, mid + 1, r);
+	pushup(o);
+}
+
+inline void erase(int o, int p, int l, int r) {
+	if(l == r) {
+		t[o] = mp(D(0, 0, 0), D(0, 0, 0));
+		return;
+	}
+	int mid = l + r >> 1;
+	if(p <= mid) erase(ls[o], p, l, mid);
+	else erase(rs[o], p, mid + 1, r);
 	pushup(o);
 }
 
 inline void merge(int& o1, int o2, int l, int r) {
-	if(!o1 || !o2) return o1 += o2, void();
-	if(l == r) return o1 = 0, void();
+	if(!o1 || !o2) {
+		o1 += o2;
+		return;
+	}
+	if(l == r) return;
 	int mid = l + r >> 1;
 	merge(ls[o1], ls[o2], l, mid);
 	merge(rs[o1], rs[o2], mid + 1, r);
@@ -115,54 +143,93 @@ inline void merge(int& o1, int o2, int l, int r) {
 }
 
 inline void dfs2(int u, int fa) {
-	for(auto [i, a, b] : nd[u]) {
-		ll v = getdis(a, b) + dis[a] - w[i];
-		insert(rt[u], i, b, v, 1, m);
+	auto getans = [&](const pair<D, D>& x, const pair<D, D>& y) {
+		auto [a, b] = x;
+		auto [c, d] = y;
+		//cerr << a.y << " " << b.y << " " << c.y << " " << d.y << "\n";
+		ans = max(ans, max({
+					getdis(a.y, c.y) + a.v + c.v,
+					getdis(a.y, d.y) + a.v + d.v,
+					getdis(b.y, c.y) + b.v + c.v,
+					getdis(b.y, d.y) + b.v + d.v
+				}) - 2 * dis[u]);
+	};
+
+
+	for(auto [id, e] : ins[u]) {
+		auto [x, y] = e;
+		ll d = getdis(x, y);
+		D o = {x, y, dis[x] + d - 2 * a[id]};
+		getans(t[rt[u]], mp(o, D(0, 0, 0)));
+		insert(rt[u], id, o, 1, m);
 	}
-	for(auto [v, w] : adj[u]) {
-		if(v == fa) continue;
+	
+	for(auto [v, w] : adj[u]) if(v != fa) {
 		dfs2(v, u);
+		getans(t[rt[u]], t[rt[v]]);
 		merge(rt[u], rt[v], 1, m);
 	}
-	res = max(res, (ans[rt[u]] - 2 * dis[u]) / 2);
+	for(auto [id, e] : era[u]) {
+		erase(rt[u], id, 1, m);
+	}
 }
 
 void solve() {
-	cin >> n >> m;
-	ecnt = tt = 0;
-	rep(i, 1, n) rt[i] = 0, adj[i].clear(), nd[i].clear();
-	res = -inf;
-
-	rep(i, 2, n) {
-		int u, v, w;
-		cin >> u >> v >> w;
+	cin >> n;
+	ans = -inf;
+	tt = 0;
+	rep(i, 1, n) adj[i].clear(), ins[i].clear(), era[i].clear(), son[i].clear(), rt[i] = 0;
+	dfncnt = eulcnt = 0;
+	rep(i, 1, n-1) {
+		int u, v, w; cin >> u >> v >> w;
 		adj[u].emplace_back(v, w);
 		adj[v].emplace_back(u, w);
 	}
-
 	dfs1(1, 0, 0);
-	buildst();
+	initst();
+	
+	auto getpos = [&](int u, int v) {
+		return (upper_bound(son[u].begin(), son[u].end(), mp(dfn[v], n+1)) - 1) -> se;
+	};
 
+	cin >> m;
 	rep(i, 1, m) {
-		cin >> px[i] >> py[i] >> w[i];
-		nd[px[i]].emplace_back(i, px[i], py[i]);
-		nd[py[i]].emplace_back(i, py[i], px[i]);
+		int x, y;
+		cin >> x >> y >> a[i];
+		if(x == y) continue;
+		if(dfn[x] > dfn[y]) swap(x, y);
+		int lca = LCA(x, y);
+		if(lca == x) {
+			ins[y].emplace_back(i, mp(y, x));
+			int yy = getpos(x, y);
+			era[yy].emplace_back(i, mp(y, x));
+		} else {
+			ins[x].emplace_back(i, mp(x, y));
+			ins[y].emplace_back(i, mp(y, x));
+			int xx = getpos(lca, x);
+			int yy = getpos(lca, y);
+			era[xx].emplace_back(i, mp(x, y));
+			era[yy].emplace_back(i, mp(y, x));
+		}
 	}
-
 	dfs2(1, 0);
-
-	if(res < -1e18) cout << "F" << "\n";
-	else cout << res << "\n";
+	if(ans < -1e18) {
+		cout << "F" << "\n";
+	} else {
+		cout << ans / 2 << "\n";
+	}
 }
+
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin.tie(nullptr), cout.tie(nullptr);
-	cout << fixed << setprecision(15); 
+	cout << fixed << setprecision(15);
 	cerr << fixed << setprecision(15);
 
-	int t; cin >> t;
+	int t;
+	cin >> t;
 	while(t--) solve();
-	
+
 	return 0;
 }
