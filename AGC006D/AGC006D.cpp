@@ -26,18 +26,18 @@ bool b[N];
 
 bool check(int x) {
 	rep(i, 1, 2*n-1) b[i] = a[i] >= x;
-	if(b[n] == b[n-1] || b[n] == b[n+1]) return b[n];
 	int p1 = 0, p2 = 2 * n;
 	per(i, 1, n-1) if(b[i] == b[i+1]) {
 		p1 = i+1;
 		break;
 	}
-	rep(i, 1, n+1) if(b[i] == b[i-1]) {
+	rep(i, n+1, 2*n-1) if(b[i] == b[i-1]) {
 		p2 = i-1;
 		break;
 	}
-	if(b[p1] == b[p2]) return b[p1];
-	if(n - p1 < p2 - n) 
+	if(p1 == 0 && p2 == 2 * n) return (n & 1) ^ b[n] ^ 1;
+	if(n - p1 < p2 - n) return b[p1];
+	else return b[p2];
 }
 
 int main() {
@@ -53,8 +53,8 @@ int main() {
 	int res = 0;
 	while(L <= R) {
 		int mid = L + R >> 1;
-		if(check(mid)) res = mid, R = mid - 1;
-		else L = mid + 1;
+		if(check(mid)) res = mid, L = mid + 1;
+		else R = mid - 1;
 	}
 	cout << res << "\n";
 	
