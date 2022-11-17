@@ -23,7 +23,7 @@ const int N = 1e6 + 5;
 
 int n;
 char s[N], t[N];
-int f[N], pos[N], lst[27];
+int f[N], pos[N];
 
 int main() {
 	ios::sync_with_stdio(false);
@@ -33,6 +33,11 @@ int main() {
 
 	cin >> n;
 	cin >> (s + 1) >> (t + 1);
+
+	if(strcmp(s + 1, t + 1) == 0) {
+		cout << 0 << "\n";
+		return 0;
+	}
 
 	int p = n;
 	per(i, 1, n) {
@@ -44,10 +49,19 @@ int main() {
 		}
 		pos[i] = p;
 	}
-	rep(i, 1, n) f[i] = pos[i] == i ? 0 : f[pos[i]] + 1;
-	int ans = 0;
-	rep(i, 1, n) ans = max(ans, f[i]);
+	queue<pair<int, int>> q;
+	int d = 0, ans = 0;
+	per(i, 1, n) {
+		if(pos[i] == pos[i+1]) continue;
+		--d;
+		if(pos[i] != pos[i+1] - 1) q.emplace(pos[i] - d, 1 + d);
+		while(!q.empty() && q.front().fi + d >= i) q.pop();
+		if(!q.empty()) {
+			ans = max(ans, q.front().se - d);
+		}
+	}
 	cout << ans << "\n";
+
 	
 	return 0;
 }
