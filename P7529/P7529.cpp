@@ -1,7 +1,7 @@
-// Problem: P7416 [USACO21FEB] No Time to Dry P
+// Problem: P7529 [USACO21OPEN] Permutation G
 // Contest: Luogu
-// URL: https://www.luogu.com.cn/problem/P7416
-// Memory Limit: 250 MB
+// URL: https://www.luogu.com.cn/problem/P7529
+// Memory Limit: 256 MB
 // Time Limit: 1000 ms
 // 
 // Powered by CP Editor (https://cpeditor.org)
