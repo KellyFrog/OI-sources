@@ -1,8 +1,8 @@
 #!/bin/bash
 
 gen=$1
-std=$2
-sol=$3
+sol=$2
+std=$3
 
 in="in"
 out="out"
@@ -28,3 +28,4 @@ do
 	break
     fi
 done
+
