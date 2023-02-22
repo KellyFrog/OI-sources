@@ -76,7 +76,7 @@ void solve() {
 	pre[1] = n+1, nxt[n+1] = 1;
 	nxt[n] = nxt[n+2] = nxt[n+3] = 0;
 
-	rep(i, 1, k) bel[i] = 0;
+	rep(i, 0, k) bel[i] = 0;
 	rep(i, 1, m) {
 		if(!bel[a[i]]) {
 			int p = getpos();
