@@ -27,7 +27,7 @@ int n, m;
 int head[N], nxt[N], to[N], tot = 1;
 int dfn[N], low[N], dfncnt, stk[N], top, bel[N], bc;
 vector<int> adj[N];
-int c1[N], c2[N];
+int c1[N], c2[N], f[N], g[N], sum[N];
 
 inline void addedge(int u, int v) {
 	nxt[++tot] = head[u];
@@ -54,6 +54,17 @@ inline void tarjan(int u, int lst) {
 			int x = stk[top--];
 			bel[x] = bc;
 			if(x == u) break;
+		}
+	}
+}
+
+inline void dfs(int u, int fa) {
+	sum[u] = c2[u];
+	f[u] = pw[c1[u]+c2[u]];
+	for(int v : adj[u]) {
+		if(v != fa) {
+			dfs(v, u);
+			f[u] = (1ll * f[u] * pw[sum[v]] + 1ll * f[u]
 		}
 	}
 }
