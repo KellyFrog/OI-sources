@@ -76,10 +76,11 @@ void solve() {
 	rep(i, 1, n) cin >> a[i];
 	ans.clear();
 	s[0].clear(), s[1].clear(), s[2].clear();
-	rep(i, 1, k) {
-		pos[i] = b[i][0] = b[i][1] = 0;
+	rep(i, 1, m) {
+		b[i][0] = b[i][1] = 0;
 		s[0].insert(i);
 	}
+	rep(i, 1, k) pos[i] = 0;
 	int c = 0;
 	rep(i, 1, n) {
 		//cerr << "i=" << i << " " << a[i] << "\n";
@@ -105,10 +106,10 @@ void solve() {
 				} else {
 					int c = b[pos[a[j]]][1];
 					int s = 0;
-					ins(a[i], p);
-					pos[a[i]] = p;
 					rep(k, i+1, j) s += a[k] == c;
 					if(s & 1) {
+						ins(a[i], p);
+						pos[a[i]] = p;
 						rep(k, i+1, j) ins(a[k], pos[a[k]]);
 						rep(k, i, j) pos[a[k]] = (b[pos[a[k]]][0] == a[k] || b[pos[a[k]]][1] == a[k]) ? pos[a[k]] : 0;
 					} else {

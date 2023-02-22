@@ -31,13 +31,13 @@ int main(int argc, char** argv) {
 		rep(i, 1, l) {
 			int op = ouf.readInt();
 			if(op == 1) {
-				int p = ouf.readInt();
+				int p = ouf.readInt(1, n);
 				int x = inf.readInt();
 				if(!dq[p].empty() && dq[p].back() == x) dq[p].pop_back();
 				else dq[p].push_back(x);
 				++cnt;
 			} else {
-				int x = ouf.readInt(), y = ouf.readInt();
+				int x = ouf.readInt(1, n), y = ouf.readInt(1, n);
 				if(x == y) quitf(_wa, "T = %d, i = %d, x = y\n", T, i);
 				if(dq[x].empty() || dq[y].empty()) quitf(_wa, "T = %d, i = %d: dq is empty: %d %d", T, i, dq[x].size(), dq[y].size());
 				if(dq[x].front() != dq[y].front()) quitf(_wa, "T = %d, i = %d: dq[x].front() != dq[y].front()", T, i);
