@@ -78,8 +78,12 @@ void solve() {
 	ll ans = 1;
 	rep(i, 1, n+m-2) d[i] += d[i-1];
 	rep(i, 1, n+m-2) d[i] += d[i-1];
-	rep(i, 0, n+m-2) ans = 1ll * ans * (d[i]-i) % P * qpow((1ll * n * m - i) % P, P - 2) % P; 
-	cout << ans << "\n";
+	ll inv = 1;
+	rep(i, 0, n+m-2) {
+		ans = ans * (d[i]-i) % P; 
+		inv = inv * (1ll * n * m - i) % P;
+	}
+	cout << ans * qpow(inv, P-2) % P << "\n";
 }
 	
 
