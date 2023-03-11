@@ -1,9 +1,6 @@
 *.exe
 *.lib
 *.o
-testdata/
-.vscode/
-downloads
 contests/
 wc2022/
 *.swp
