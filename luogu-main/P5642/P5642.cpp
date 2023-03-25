@@ -24,9 +24,9 @@ const int P = 998244353;
 int n, m;
 vector<int> adj[N];
 vector<pair<pair<int, int>, int>> bdj[N];
-vector<ll> cdj[N];
-ll f[N], g[N], h[N], sum[N], t[N];
-int anc[N][21], dep[N], dfn[N], siz[N], son[N], top[N], dfncnt;
+vector<ll> cdj[N], ddj[N], edj[N];
+ll f[N], g[N], h[N], sum[N], t[N], tag[N];
+int anc[N][21], dep[N], dfn[N], siz[N], son[N], top[N], fat[N], dfncnt;
 int s[N], ans;
 
 inline int lowbit(int x) { return x & (-x); }
@@ -36,12 +36,13 @@ inline void add(int l, int r, int val) { add(l, val), add(r+1, -val); }
 
 inline void dfs1(int u, int fa) {
 	dep[u] = dep[fa] + 1;
+	fat[u] = fa;
 	anc[u][0] = fa;
 	dfn[u] = ++dfncnt, siz[u] = 1;
 	rep(i, 1, 20) anc[u][i] = anc[anc[u][i-1]][i-1];
 	for(int v : adj[u]) if(v != fa) {
 		dfs1(v, u), siz[u] += siz[v];
-		if(siz[v] > siz[son[v]]) son[v] = u;
+		if(siz[v] > siz[son[u]]) son[u] = v;
 	}
 }
 
@@ -76,29 +77,46 @@ inline void dfs3(int u, int fa) {
 	for(int v : adj[u]) if(v != fa) dfs3(v, u);
 }
 
+multiset<ll> st;
+
+inline void dfss(int u, int fa) {
+	if(son[u]) {
+		dfss(son[u], u);
+		tag[u] = max(tag[u], tag[son[u]]);
+	}
+}
+
 inline void dfs4(int u, int fa) {
-	for(int v : adj[u]) if(v != fa) h[v] = h[u] + sum[u] - f[v];
-	vector<pair<int, int>> endp;
-	for(int v : adj[u]) if(v != fa) endp.emplace_back(dfn[v]+siz[v]-1, v);
-	multiset<ll> s;
+	cerr << "dfs4=" << u << " " << fa << "\n";
+	if(u == top[u]) dfss(u, fa);
+	if(son[fa] != u) h[u] = max(h[u], tag[fa]);
+	h[u] -= f[u];
+	for(int v : adj[u]) if(v != fa) h[v] = max(h[v], h[u] + sum[u]);
 	for(auto e : bdj[u]) {
 		int x = e.fi.fi, y = e.fi.se, w = e.se;
-		ll val = g[x] + g[y] - 2 * g[u] + sum[x] + sum[y] - sum[u] + w;
-		int p1 = x == u ? 0 : lower_bound(endp.begin(), endp.end(), mp(dfn[x], 0))->se;
-		int p2 = y == u ? 0 : lower_bound(endp.begin(), endp.end(), mp(dfn[y], 0))->se;
-		cdj[p1].pb(val), cdj[p2].pb(val);
-		s.emplace(val);
-	}
-	for(int v : adj[u]) {
-		if(v == fa) continue;
-		for(auto val : cdj[v]) {
-			s.erase(s.find(val));
+		ll val = query(dfn[x]) + query(dfn[y]) + sum[x] + sum[y] - sum[u] + w + h[u];
+		while(top[x] != top[u]) {
+			tag[x] = max(tag[x], val);
+			x = fat[top[x]];
+			if(x != u) h[son[x]] = max(h[son[x]], val);
 		}
-		ll val = s.empty() ? -1e18 : *s.rbegin();
-		h[v] = max(h[v], val + h[u] - f[v]);
-		for(auto val : cdj[v]) s.emplace(val);
+		while(top[y] != top[u]) {
+			tag[y] = max(tag[y], val);
+			y = fat[top[y]];
+			if(y != u) h[son[y]] = max(h[son[y]], val);
+		}
+		if(x == u) swap(x, y);
+		ddj[u].pb(val);
+		edj[son[x]].pb(val);
 	}
-	for(int v : adj[u]) if(v != fa) dfs4(v, u);
+	for(ll v : ddj[u]) st.insert(v);
+	for(ll v : edj[u]) st.erase(st.find(v));
+	if(!st.empty()) h[u] = max(h[u], *st.rbegin());
+
+	if(son[u]) dfs4(son[u], u);
+	else st.clear();
+
+	for(int v : adj[u]) if(v != fa && v != son[u]) dfs4(v, u);
 }
 
 inline void dfs5(int u, int fa) {
@@ -134,7 +152,14 @@ int main() {
 	}
 	dfs2(1, 0);
 	dfs3(1, 0);
+	cerr << "f&g=" << '\n';
+	rep(i, 1, n) cerr << f[i] << " \n"[i == n];
+	rep(i, 1, n) cerr << g[i] << " \n"[i == n];
+	rep(i, 1, n) cerr << siz[i] << " \n"[i == n];
+	rep(i, 1, n) cerr << son[i] << " \n"[i == n];
+	rep(i, 1, n) cerr << top[i] << " \n"[i == n];
 	dfs4(1, 0);
+	rep(i, 1, n) cerr << g[i] << " \n"[i == n];
 	dfs5(1, 0);
 	cout << (ans + P) % P << "\n";
 
