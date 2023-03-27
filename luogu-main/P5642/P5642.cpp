@@ -33,7 +33,7 @@ multiset<ll> st;
 inline int lowbit(int x) { return x & (-x); }
 inline void add(int x, ll val) { for(int x0 = x; x0 <= n; x0 += lowbit(x0)) t[x0] += val; }
 inline ll query(int x) { ll ret = 0; for(int x0 = x; x0; x0 -= lowbit(x0)) ret += t[x0]; return ret; }
-inline void add(int l, int r, int val) { add(l, val), add(r+1, -val); }
+inline void add(int l, int r, ll val) { add(l, val), add(r+1, -val); }
 
 inline void dfs1(int u, int fa) {
 	dep[u] = dep[fa] + 1;
@@ -90,7 +90,7 @@ inline void dfs4(int u, int fa) {
 	if(son[fa] != u) h[u] = max(h[u], mxval[fa]);
 	h[u] = max(h[u], mxxval[fa]);
 	h[u] -= f[u];
-	dfss(u);
+	if(son[fa] != u) dfss(u);
 	for(int v : adj[u]) if(v != fa) h[v] = max(h[v], h[u] + sum[u]);
 	ll mxx = 0;
 	for(int v : adj[u]) if(v != fa) h[v] = max(h[v], mxx), mxx = max(mxx, tagg[v]);
@@ -169,7 +169,7 @@ inline void dfs5(int u, int fa) {
 	}
 }
 
-int main() {
+signed main() {
 // 	freopen("emotion.in", "r", stdin);
 // 	freopen("emotion.out", "w", stdout);
 	ios::sync_with_stdio(false);
