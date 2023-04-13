@@ -5,6 +5,6 @@ f=$1
 
 for e in $v
 do
-	echo $e
-	$f < $e
+        echo $e
+        $f < $e
 done
