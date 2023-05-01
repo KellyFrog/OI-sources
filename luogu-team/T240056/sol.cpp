@@ -25,17 +25,20 @@ const int N = 3e5 + 5;
 
 mt19937 mtrnd(chrono::steady_clock::now().time_since_epoch().count());
 
+//mt19937 mtrnd(0x1145);
+
 int n, q;
-int a[N], b[N];
+int a[N], b[N], c[N];
 vector<int> adj[N];
 ll t[N];
-int dfn[N], siz[N], dfncnt, pos[N], fat[N];
+int dfn[N], siz[N], dfncnt, pos[N], fat[N], cnt[N];
 int st[20][N], lg2[N];
+bool vis[N];
 
 inline int lowbit(int x) { return x & (-x); }
 inline void add(int x, ll val) { for(int x0 = x; x0 <= n+1; x0 += lowbit(x0)) t[x0] += val; }
 inline void add(int l, int r, ll val) { add(l, val), add(r+1, -val); }
-inline ll query(int x) { int ret = 0; for(int x0 = x; x0; x0 -= lowbit(x0)) ret += t[x0]; return ret; }
+inline ll query(int x) { ll ret = 0; for(int x0 = x; x0; x0 -= lowbit(x0)) ret += t[x0]; return ret; }
 
 inline int querymx(int l, int r) {
 	int j = lg2[r-l+1];
@@ -116,16 +119,21 @@ int main() {
 
 	cin >> n >> q;
 	rep(i, 1, n) cin >> a[i];
-	rep(i, 1, n) b[i] = a[i];
+	rep(i, 1, n) c[i] = b[i] = a[i];
 	sort(b + 1, b + n + 1);
 	int m = unique(b + 1, b + n + 1) - b - 1;
 	rep(i, 1, n) a[i] = lower_bound(b + 1, b + m + 1, a[i]) - b;
-	rep(i, 1, n) pos[a[i]] = i;
+	rep(i, 1, n) b[i] = c[i];
+	sort(b + 1, b + n + 1);
+	rep(i, 1, n) ++cnt[a[i]];
+	rep(i, 1, m) cnt[i] += cnt[i-1];
+	rep(i, 1, n) a[i] = cnt[a[i]]--;
+	rep(i, 1, n) pos[a[i]] =i ;
 
 	lg2[0] = -1;
 	rep(i, 1, n) lg2[i] = lg2[i>>1] + 1;
 	rep(i, 1, n) st[0][i] = a[i];
-	rep(j, 1, 18) rep(i, 1, n) {
+	rep(j, 1, 19) rep(i, 1, n) {
 		if(i + (1 << j) - 1 > n) break;
 		st[j][i] = max(st[j-1][i], st[j-1][i+(1<<j-1)]);
 	}
@@ -150,6 +158,7 @@ int main() {
 	
 	assert(tr1.siz[rt1] == n);
 	assert(tr2.siz[rt2] == n);
+
 
 	while(q--) {
 		int op, l, r; cin >> op >> l >> r;
@@ -177,6 +186,7 @@ int main() {
 			if(v) {
 				int u = pos[v];
 				add(dfn[u], dfn[u] + siz[u] - 1, -::b[::a[u]]);
+				vis[v] = 1;
 			}
 			tr2.val[i] = max(tr2.val[i], tr2.val[j]);
 			tr2.val[j] = 0;
@@ -206,7 +216,9 @@ int main() {
 				tr1.merge(rt1, a, b);
 				tr1.merge(rt1, rt1, c);
 			}
-			cout << query(dfn[pos[x]]) - query(dfn[fat[pos[y]]]) << "\n";
+			ll ans = query(dfn[pos[x]]) - query(dfn[fat[pos[y]]]);
+			if(vis[x]) ans += b[x];
+			cout << ans << "\n";
 		}
 		assert(tr1.siz[rt1] == n);
 		assert(tr2.siz[rt2] == n);
