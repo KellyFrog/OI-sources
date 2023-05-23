@@ -4,7 +4,7 @@
 #include <algorithm>
 
 constexpr int MAX_N = 43000;
-constexpr int MAX_CALLS = 1000000;
+constexpr int MAX_CALLS = 10000000;
 
 namespace {
 
