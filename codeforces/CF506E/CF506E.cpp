@@ -25,36 +25,29 @@ const int P = 1e4 + 7;
 
 int n, m;
 char s[N];
-int f[N][N][N], g[M][M];
-int pw[M][M], res[M][M], tmp[M][M];
+int f[N][N][N];
+ll g[M][M], pw[M][M], res[M][M], tmp[M][M];
 
-void mul(int a[M][M], int b[M][M], int c[M][M]) {
+void mul(ll a[M][M], ll b[M][M], ll c[M][M]) {
 	memset(tmp, 0, sizeof tmp);
-	rep(k, 0, 2*n) rep(i, 0, 2*n) rep(j, 0, 2*n) tmp[i][j] = (tmp[i][j] + a[i][k] * b[k][j]) % P;
+	rep(k, 0, 2*n+1) rep(i, 0, 2*n+1) rep(j, 0, 2*n+1) tmp[i][j] += a[i][k] * b[k][j];
+	rep(i, 0, 2*n+1) rep(j, 0, 2*n+1) tmp[i][j] %= P;
 	memcpy(c, tmp, sizeof tmp);
 }
 
 int solve(int k) {
 	cerr << "k=" << k << "\n";
+	++k;
 	
-	rep(i, 0, 2*n) rep(j, 0, 2*n) cerr << g[i][j] << " \n"[j == 2*n];
-	memset(res, 0, sizeof res);
-	rep(i, 0, 2*n) res[i][i] = 1;
-	rep(t, 1, k) {
-		mul(res, g, res);
-		rep(i, 0, 2*n) cerr << res[0][i] << " \n"[i == 2*n];
-	}
-
 	memcpy(pw, g, sizeof pw);
 	memset(res, 0, sizeof res);
-	rep(i, 0, 2*n) res[i][i] = 1;
+	rep(i, 0, 2*n+1) res[i][i] = 1;
 	while(k) {
 		if(k & 1) mul(res, pw, res);
 		mul(pw, pw, pw);
 		k >>= 1;
 	}
-	rep(i, 0, 2*n) cerr << res[0][i] << " \n"[i == 2*n];
-	return res[0][2*n];
+	return res[0][2*n+1];
 }
 
 int sum[N];
@@ -70,53 +63,57 @@ int main() {
 
 	f[1][n][0] = 1;
 	rep(i, 1, n) per(j, i, n) {
+		rep(k, 0, n) f[i][j][k] %= P;
 		if(s[i] == s[j]) {
-			rep(k, 0, n) f[i+1][j-1][k+1] = (f[i+1][j-1][k+1] + f[i][j][k]) % P;
+			rep(k, 0, n) f[i+1][j-1][k+1] += f[i][j][k];
 		} else {
 			rep(k, 0, n) {
-				f[i+1][j][k+1] = (f[i+1][j][k+1] + f[i][j][k]) % P;
-				f[i][j-1][k+1] = (f[i][j-1][k+1] + f[i][j][k]) % P;
+				f[i+1][j][k+1] += f[i][j][k];
+				f[i][j-1][k+1] += f[i][j][k];
 			}
 		}
 	}
 
-
 	int ans = 0;
+
+	rep(i, 1, n) g[i-1][i] = 1;
+	rep(i, n+2, 2*n+1) g[i-1][i] = 1;
+	rep(i, 1, n) g[i][i] = 24;
+	rep(i, n+1, 2*n) g[i][i] = 25;
+	g[2*n+1][2*n+1] = 26;
+
 	if((n + m) % 2 == 0) {
-		rep(i, 1, n) g[i-1][i] = 1, g[i][i] = 24;
-		rep(i, n+2, 2*n) g[i-1][i] = 1;
-		rep(i, n+1, 2*n) g[i][i] = 25;
-		g[2*n][2*n] = 26, g[0][0] = 24;
-
-		rep(i, 1, n+1) rep(j, n/2, n) sum[j] = (sum[j] + f[i][i-1][j]) % P;
-		rep(i, 1, n) rep(j, 0, n) sum[j+1] = (sum[j+1] + f[i][i][j]) % P;
-		rep(i, 1, n) cerr << sum[i] << " \n"[i == n];
-
-
-		rep(i, 1, n+1) rep(j, n/2, n) g[2*j-n-2][j+n-1] = (g[2*j-n-2][j+n-1] + f[i][i-2][j]) % P;
-		rep(i, 1, n) rep(j, 1, n) g[2*(j+1)-n-2][j+1+n-1] = (g[2*(j+1)-n-2][j+1+n-1] + f[i][i][j]) % P;
-
-		ans = (ans + solve(n + m >> 1)) % P;
+		rep(i, 1, n) rep(j, n/2, n) {
+			int a = 2*j - n;
+			int b = n + j + 1;
+			g[a][b] = (g[a][b] + f[i][i-1][j]) % P;
+		}
+		rep(i, 1, n) rep(j, n/2, n) {
+			int a = 2*j - n + 1;
+			int b = n + j + 1;
+			g[a][b] = (g[a][b] + f[i][i][j]) % P;
+		}
+		ans = solve(n + m >> 1);
 	} else {
-		rep(i, 1, n) g[i-2][i] = 1, g[i][i] = 24;
-		rep(i, n+2, 2*n) g[i-2][i] = 1;
-		rep(i, n+1, 2*n) g[i][i] = 25;
-		g[2*n][2*n] = 26, g[0][0] = 24;
-		rep(i, 1, n+1) rep(j, n/2, n) g[2*j-n-2][j+n] = (g[2*j-n-2][j+n] + f[i][i-2][j]) % P;
-		rep(i, 1, n) rep(j, 1, n) g[2*(j+1)-n-2][j+1+n] = (g[2*(j+1)-n-2][j+1+n] + f[i][i][j]) % P;
-		rep(i, 1, n-2) if(s[i] == s[i+1]) rep(j, 0, n-2) g[2*(j+1)-n-2][j+1+n] = (g[2*(j+1)-n-2][j+1+n] - f[i][i+1][j]) % P;
+		rep(i, 1, n) rep(j, (n+1)/2, n) {
+			int a = 2*j - n;
+			int b = n + j + 1;
+			g[a][b] = (g[a][b] + f[i][i-1][j]) % P;
+		}
+		ans = 26ll * solve(n + m >> 1);
+		rep(i, 1, n) rep(j, (n+1)/2, n) {
+			int a = 2*j - n;
+			int b = n + j + 1;
+			g[a][b] = 0;
+		}
+		rep(i, 1, n) rep(j, n/2, n) {
+			int a = 2*j - n + 1;
+			int b = n + j + 1;
+			g[a][b] = (g[a][b] + f[i][i][j]) % P;
+		}
 		ans = (ans + solve(n + m + 1 >> 1)) % P;
-
-		memset(g, 0, sizeof g);
-		rep(i, 1, n) g[i-2][i] = 1, g[i][i] = 24;
-		rep(i, n+2, 2*n) g[i-2][i] = 1;
-	   	rep(i, n+1, 2*n) g[i][i] = 25;
-		g[2*n][2*n] = 26, g[0][0] = 24;
-		rep(i, 1, n-2) if(s[i] == s[i+1]) rep(j, 0, n-2) g[2*(j+1)-n-2][j+1+n] = (g[2*(j+1)-n-2][j+1+n] + f[i][i+1][j]) % P;
-		ans = (ans + 26ll * solve(n + m >> 1)) % P;
 	}
+	cout << ans << "\n";
 
-	cout << (ans + P) % P << "\n";
-	
 	return 0;
 }
