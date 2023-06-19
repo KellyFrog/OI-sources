@@ -2,6 +2,10 @@ contests/
 **in
 **out
 **ans
+**.diff
+**.log
 **~
 **.swp
 **.exe
+**ans*.txt
+**in*.txt

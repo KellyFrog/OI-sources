@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cppName=$1
+solName=$1
 
 RED='\e[1;31m' # 红
 GREEN='\e[1;32m' # 绿
@@ -9,17 +9,15 @@ BLUE='\e[1;34m' # 蓝
 PINK='\e[1;35m' # 粉红
 CLEAR='\e[0m' # 清除颜色
 
-if [ -f $cppName.cpp ]; then
+if [ -f $solName.cpp ]; then
 
-echo g++ -o $cppName.exe $cppName.cpp -std=c++17
+echo g++ -o $solName.exe $solName.cpp -std=c++17 -O2
+rm $solName.exe
+g++ -o $solName.exe $solName.cpp -std=c++17 -O2
 
-if [ `g++ -o $cppName.exe $cppName.cpp -std=c++17` ]; then
+if [ -e $solName.exe ]; then
 
-exit 1
-
-else
-
-exeName=$cppName.exe
+exeName=$solName.exe
 inputList=`ls *.in`
 
 for inFile in $inputList
@@ -36,7 +34,7 @@ echo "=======Testing testcase $fileName.in/.ans======"
 
 stat=`cat timelog`
 
-diff -Z $outFile $ansFile > /dev/null
+diff -Z $outFile $ansFile > $diffFile
 
 if [ -s $diffFile ]; then
 echo -e ${RED}wrong answer${CLEAR}, $stat
@@ -55,8 +53,10 @@ fi # diff -Z $outFile $ansFile
 
 done
 
-fi #g++ -o $cppName.exe $cppName.cpp -std=c++17
+rm $outFile $logFile $diffFile
+
+fi #g++ -o $solName.exe $solName.cpp -std=c++17
 
 else
-echo File $cppName.cpp does not exsist!
-fi # -f $cppName.cpp
+echo File $solName.cpp does not exsist!
+fi # -f $solName.cpp
