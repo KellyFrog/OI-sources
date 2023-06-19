@@ -53,7 +53,7 @@ fi # diff -Z $outFile $ansFile
 
 done
 
-rm $outFile $logFile $diffFile
+rm $outFile $logFile $diffFile timelog
 
 fi #g++ -o $solName.exe $solName.cpp -std=c++17
 
