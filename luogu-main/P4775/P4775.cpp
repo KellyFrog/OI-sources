@@ -1,11 +1,11 @@
-// Problem: P4775 [NOI2018] 情报中心
+// Problem: P4775 [NOI2018] 鎯呮姤涓績
 // Contest: Luogu
 // URL: https://www.luogu.com.cn/problem/P4775
 // Memory Limit: 500 MB
 // Time Limit: 8000 ms
 // Create Time: 2022-07-08 10:20:54
 // Author: Chen Kaifeng
-// 
+//
 // Powered by CP Editor (https://cpeditor.org)
 
 #include <bits/stdc++.h>
@@ -83,16 +83,16 @@ inline ll getdis(int x, int y) {
 }
 
 inline pair<D, D> merge(const pair<D, D>& x, const pair<D, D>& y) {
-	vector<pair<ll, pair<D, D>>> v;
-	v.reserve(6);
 	vector<D> d = {x.fi, x.se, y.fi, y.se};
+	ll mx = LONG_LONG_MIN;
+	pair<D, D> ret;
 	for(int i = 0; i < 4; ++i) {
 		for(int j = 0; j < i; ++j) {
-			v.emplace_back(getdis(d[i].y, d[j].y) + d[i].v + d[j].v, mp(d[i], d[j]));
+			ll val = getdis(d[i].y, d[j].y) + d[i].v + d[j].v;
+			if(val > mx) mx = val, ret = mp(d[i], d[j]);
 		}
 	}
-	sort(v.begin(), v.end(), [&](const pair<ll, pair<D, D>>& x, const pair<ll, pair<D, D>>& y) { return x.fi > y.fi; });
-	return v[0].se;
+	return ret;
 }
 
 inline int newnode() {
@@ -163,7 +163,7 @@ inline void dfs2(int u, int fa) {
 		getans(t[rt[u]], mp(o, D(0, 0, 0)));
 		insert(rt[u], id, o, 1, m);
 	}
-	
+
 	for(auto [v, w] : adj[u]) if(v != fa) {
 		dfs2(v, u);
 		getans(t[rt[u]], t[rt[v]]);
@@ -187,7 +187,7 @@ void solve() {
 	}
 	dfs1(1, 0, 0);
 	initst();
-	
+
 	auto getpos = [&](int u, int v) {
 		return (upper_bound(son[u].begin(), son[u].end(), mp(dfn[v], n+1)) - 1) -> se;
 	};
@@ -233,3 +233,4 @@ int main() {
 
 	return 0;
 }
+
